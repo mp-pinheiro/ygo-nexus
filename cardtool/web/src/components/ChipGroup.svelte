@@ -3,6 +3,7 @@
   // drives the .on class; clicking toggles the value in place (reactive set →
   // results re-derive automatically, replacing the monolith's render() call).
   import { toggleSet } from '../lib/stores/filters.svelte.js'
+  import { activateKey } from '../lib/a11y.js'
 
   let { title, values, set } = $props()
 </script>
@@ -11,7 +12,8 @@
   <h3>{title}</h3>
   <div class="chips">
     {#each values as v (v)}
-      <span class="chip" class:on={set.has(v)} onclick={() => toggleSet(set, v)}>{v}</span>
+      <span class="chip" class:on={set.has(v)} role="button" tabindex="0" aria-pressed={set.has(v)}
+        onclick={() => toggleSet(set, v)} onkeydown={activateKey(() => toggleSet(set, v))}>{v}</span>
     {/each}
   </div>
 </div>

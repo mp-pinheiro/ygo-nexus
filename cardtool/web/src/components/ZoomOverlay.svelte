@@ -3,6 +3,7 @@
 </script>
 
 {#if ui.zoom}
+  <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
   <div id="zoom" onclick={() => (ui.zoom = null)}>
     <img class:pix={ui.zoom.pix} src={ui.zoom.url} alt="">
   </div>

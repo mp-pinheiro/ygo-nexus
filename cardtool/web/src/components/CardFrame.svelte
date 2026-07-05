@@ -3,6 +3,7 @@
   // All visual classes (.ycard/.f-*/.yc-*/.pix) are global in app.css.
   import { FRAME } from '../lib/cards.js'
   import { openZoom } from '../lib/stores/ui.svelte.js'
+  import { activateKey } from '../lib/a11y.js'
 
   const base = import.meta.env.BASE_URL
 
@@ -20,7 +21,10 @@
 
 <div class="ycard f-{FRAME(card)}">
   <div class="yc-name"><span>{card.name}</span>{#if badge}<span class="yc-attr">{badge}</span>{/if}</div>
-  <div class="yc-art"><img class="pix" src={base + card.art} alt="" onclick={() => openZoom(base + card.art, 1)}></div>
+  <div class="yc-art">
+    <!-- svelte-ignore a11y_no_noninteractive_element_to_interactive_role -->
+    <img class="pix" src={base + card.art} alt="" role="button" tabindex="0" aria-label="Zoom game art" onclick={() => openZoom(base + card.art, 1)} onkeydown={activateKey(() => openZoom(base + card.art, 1))}>
+  </div>
   {#if mon && card.level != null}<div class="yc-lvl">{stars}<b> Lv {card.level}</b></div>{/if}
   <div class="yc-type">{typeline}</div>
   <div class="yc-text">{card.effect || ''}</div>

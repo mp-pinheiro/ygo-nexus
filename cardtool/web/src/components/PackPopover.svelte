@@ -7,6 +7,7 @@
   import { ui, showDetail, cancelPackClose, schedulePackClose } from '../lib/stores/ui.svelte.js'
   import { previewOn } from '../lib/stores/preview.svelte.js'
   import { RARITY_RANK, RARITY_BADGE } from '../lib/cards.js'
+  import { activateKey } from '../lib/a11y.js'
 
   // Local pack box art is a public/ asset (packs/N.png) -> needs BASE_URL.
   const base = import.meta.env.BASE_URL
@@ -44,6 +45,7 @@
 </script>
 
 {#if ui.packpop && meta}
+  <!-- svelte-ignore a11y_no_static_element_interactions -->
   <div
     id="packpop"
     bind:this={popEl}
@@ -65,7 +67,10 @@
           class="pp-row"
           class:cur={c.idx === ui.packpop.idx}
           data-i={c.idx}
+          role="button"
+          tabindex="0"
           onclick={() => showDetail(data.byIdx.get(c.idx))}
+          onkeydown={activateKey(() => showDetail(data.byIdx.get(c.idx)))}
         >
           <span class="rr {cls}">{ab}</span><span class="nm">{c.name}</span>
         </div>
