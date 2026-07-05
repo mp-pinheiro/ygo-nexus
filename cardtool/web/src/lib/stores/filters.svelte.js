@@ -8,6 +8,7 @@ export const filters = $state({
   sort: 'name',
   dir: 1,
   types: new SvelteSet(),
+  limits: new SvelteSet(),
   attrs: new SvelteSet(),
   races: new SvelteSet(),
   kinds: new SvelteSet(),
@@ -26,6 +27,7 @@ export const searchIn = $state(Object.fromEntries(SEARCH_FIELDS.map((f) => [f[0]
 // Clears the five facet sets and blanks the six range strings; keeps q/sort/dir.
 export function reset() {
   filters.types.clear()
+  filters.limits.clear()
   filters.attrs.clear()
   filters.races.clear()
   filters.kinds.clear()

@@ -81,6 +81,15 @@ def build_packs():
     return out
 
 
+def build_limits():
+    """Map internal card id -> banlist tier for the game's default OCG September 2010
+    list. See docs/card-format.md for the limit*.bin layout; ids absent are Unlimited."""
+    blob = pac.unpack(open(BIN1, 'rb').read())['limit201009.bin']
+    tier = {0: 'Forbidden', 1: 'Limited', 2: 'Semi-Limited'}
+    total = struct.unpack_from('<H', blob, 0)[0]
+    return {v & 0x3FFF: tier[v >> 14] for v in struct.unpack_from(f'<{total}H', blob, 8)}
+
+
 def image_ids():
     """cdb name->id (main artwork) and the set of ids, to resolve ygoprodeck art for
     cards whose ROM password is 0 (e.g. the Egyptian Gods -> 10000000, ...)."""
@@ -111,6 +120,7 @@ def extract(bin2_path=BIN2):
     indx, name, desc = files['card_indx_e.bin'], files['card_name_e.bin'], files['card_desc_e.bin']
     prop, passwd, pack = files['card_prop.bin'], files['card_pass.bin'], files['card_pack.bin']
     packs = build_packs()
+    limits = build_limits()
     name2id, idset = image_ids()
     art_raw, art_offs = card_art_offsets()
     art_base = len(art_offs) // 2
@@ -152,6 +162,7 @@ def extract(bin2_path=BIN2):
             'icon': ICON.get((p2 >> 14) & 0x7) if ctype != 'Monster' else None,
             'pack': packs[pack_id]['code'] if pack_id in packs else None,
             'rarity': RARITY.get(rarity) if pack_id else None,
+            'limit': limits.get(p1 & 0x3FFF),
         }
         cards.append(card)
     return cards, packs

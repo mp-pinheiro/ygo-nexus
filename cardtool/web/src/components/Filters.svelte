@@ -11,6 +11,7 @@
 
 <aside>
   <ChipGroup title="Card type" values={['Monster', 'Spell', 'Trap']} set={filters.types} />
+  <ChipGroup title="Banlist" values={['Forbidden', 'Limited', 'Semi-Limited', 'Unlimited']} set={filters.limits} />
   <ChipGroup title="Attribute" values={ATTRS} set={filters.attrs} />
   <RangeGroup title="Level" keyBase="lv" />
   <RangeGroup title="ATK" keyBase="atk" />

@@ -4,7 +4,9 @@
   import { data } from '../lib/stores/data.svelte.js'
   import { ui, closeDetail, setArtTab, openZoom, cancelPackClose, schedulePackClose } from '../lib/stores/ui.svelte.js'
   import { imgFull } from '../lib/cards.js'
+  import LimitBadge from './LimitBadge.svelte'
   import CardFrame from './CardFrame.svelte'
+  import { activateKey, clickSelf } from '../lib/a11y.js'
 
   const card = $derived(ui.detailIdx == null ? null : data.byIdx.get(ui.detailIdx))
 
@@ -26,14 +28,10 @@
   function packLeave() {
     schedulePackClose()
   }
-
-  function backdrop(e) {
-    if (e.target === e.currentTarget) closeDetail()
-  }
 </script>
 
 {#if card}
-  <div id="detail" onclick={backdrop}>
+  <div id="detail" use:clickSelf={closeDetail}>
     <div class="card">
       <div class="dwrap">
         <div class="viewer">
@@ -44,7 +42,8 @@
             </div>
           {/if}
           {#if ui.artTab === 'card' && imgFull(card)}
-            <img class="cardimg" src={imgFull(card)} alt="" onclick={() => openZoom(imgFull(card), 0)} onerror={() => setArtTab('art')}>
+            <!-- svelte-ignore a11y_no_noninteractive_element_to_interactive_role -->
+            <img class="cardimg" src={imgFull(card)} alt="" role="button" tabindex="0" aria-label="Zoom card image" onclick={() => openZoom(imgFull(card), 0)} onkeydown={activateKey(() => openZoom(imgFull(card), 0))} onerror={() => setArtTab('art')}>
           {:else if card.art}
             <CardFrame {card} />
           {/if}
@@ -61,8 +60,11 @@
           {/if}
           <div class="effect">{card.effect || ''}</div>
           <div class="dmeta">
+            {#if card.limit}
+              <span class="pill"><b>Limit</b><LimitBadge limit={card.limit} size={16} /> {card.limit}</span>
+            {/if}
             {#if card.pack}
-              <span class="pill packpill" onmouseenter={packEnter} onmouseleave={packLeave}><b>Pack</b>{card.pack}</span>
+              <span class="pill packpill" role="button" tabindex="0" onmouseenter={packEnter} onmouseleave={packLeave} onfocus={packEnter} onblur={packLeave}><b>Pack</b>{card.pack}</span>
             {/if}
             {#if card.rarity}
               <span class="pill"><b>Rarity</b>{card.rarity}</span>

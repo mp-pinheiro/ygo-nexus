@@ -17,11 +17,13 @@ export const SEARCH_FIELDS = [
   ['def', 'DEF', (c) => c.def],
   ['password', 'Password', (c) => c.password],
   ['pack', 'Pack', (c) => c.pack],
+  ['limit', 'Limit', (c) => c.limit],
 ]
 
 // Table columns.
 export const COLS = [
   { k: 'name', label: 'Name' },
+  { k: 'limit', label: 'Limit' },
   { k: 'cardType', label: 'Type' },
   { k: 'attribute', label: 'Attr' },
   { k: 'race', label: 'Race' },
@@ -38,6 +40,15 @@ export const KIND_ORDER = ['Normal', 'Effect', 'Fusion', 'Ritual', 'Synchro', 'T
 
 export const RARITY_RANK = { 'Ultra Rare': 0, 'Super Rare': 1, Rare: 2, Common: 3 }
 export const RARITY_BADGE = { Common: ['C', 'rr-C'], Rare: ['R', 'rr-R'], 'Super Rare': ['SR', 'rr-S'], 'Ultra Rare': ['UR', 'rr-U'] }
+
+// Badge geometry per tier (rendered as SVG by LimitBadge.svelte).
+export const LIMIT_STYLE = {
+  Forbidden: { fill: '#e23b3b', slash: true },
+  Limited: { fill: '#e8892b', text: '1', color: '#fff' },
+  'Semi-Limited': { fill: '#d9b421', text: '2', color: '#20242e' },
+}
+// Restriction rank for the sortable Limit column; unlisted (Unlimited) cards sort last.
+export const LIMIT_RANK = { Forbidden: 0, Limited: 1, 'Semi-Limited': 2 }
 
 // Max rows rendered at once (cap applied in CardTable, not the results store).
 export const CAP = 500
@@ -85,6 +96,7 @@ export function match(card, filters, searchIn) {
     for (const w of q.split(/\s+/)) if (w && !hay.includes(w)) return false
   }
   if (filters.types.size && !filters.types.has(card.cardType)) return false
+  if (filters.limits.size && !filters.limits.has(card.limit || 'Unlimited')) return false
   if (filters.attrs.size && !filters.attrs.has(card.attribute)) return false
   if (filters.races.size && !filters.races.has(card.race)) return false
   if (filters.kinds.size && !card.types.some((t) => filters.kinds.has(t))) return false
@@ -97,6 +109,7 @@ export function match(card, filters, searchIn) {
 
 // Sort key: null/undefined sorts as -1 for numeric columns, '' otherwise.
 export const sortKey = (c, k) => {
+  if (k === 'limit') return LIMIT_RANK[c.limit] ?? 3
   const v = c[k]
   return v == null ? (COLS.find((x) => x.k === k)?.num ? -1 : '') : v
 }

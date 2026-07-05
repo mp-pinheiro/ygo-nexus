@@ -1,5 +1,6 @@
 <script>
   import { showDetail } from '../lib/stores/ui.svelte.js'
+  import LimitBadge from './LimitBadge.svelte'
 
   let { card } = $props()
 
@@ -9,6 +10,7 @@
 <tr data-i={card.idx} onclick={() => showDetail(card)}>
   <td class="thumb"><img class="pix" src={base + card.art} loading="lazy" alt="" /></td>
   <td class="name">{card.name}</td>
+  <td class="lim">{#if card.limit}<LimitBadge limit={card.limit} />{/if}</td>
   <td><span class="badge t-{card.cardType}">{card.cardType}</span></td>
   <td>{#if card.attribute}<span class="sub">{card.attribute}</span>{/if}</td>
   <td class="sub">{card.race || ''}</td>
@@ -25,6 +27,7 @@
   td { padding:7px 10px; vertical-align:top; }
   td.name { font-weight:600; }
   td.num { text-align:right; font-variant-numeric:tabular-nums; color:var(--dim); }
+  td.lim { width:1px; text-align:center; }
   td.thumb { padding:4px 4px 4px 12px; width:1px; }
   td.thumb img { width:34px; height:34px; object-fit:cover; image-rendering:pixelated;
     border-radius:4px; background:var(--panel2); display:block; }
