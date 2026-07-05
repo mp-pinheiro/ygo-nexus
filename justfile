@@ -10,10 +10,9 @@ default:
 extract:
     uv run python cardtool/extract.py
 
-# Serve the card search app; then open http://localhost:{{port}}
+# Serve the card search app with live reload (open http://localhost:{{port}})
 serve port="8000":
-    @echo "Card search  ->  http://localhost:{{port}}"
-    uv run python -m http.server {{port}} --directory cardtool/web
+    uv run python cardtool/web/serve.py {{port}}
 
 # Build the database, then serve it
 run: extract serve
