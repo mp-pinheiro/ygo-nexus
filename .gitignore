@@ -18,6 +18,7 @@ data/cards.cdb
 data/cards.json
 cardtool/web/cards.js
 cardtool/web/packs/
+cardtool/web/cardart/
 
 # --- Editor / WSL shell dotfiles ---
 .bash_profile

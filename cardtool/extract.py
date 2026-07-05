@@ -10,6 +10,7 @@ reverse-engineered and validated against ProjectIgnis/BabelCDB by password:
   Prop2: kind=[0:6] attr=[6:10] level=[10:14] icon=[14:17] race=[17:22]
 """
 import json
+import sqlite3
 import struct
 from pathlib import Path
 
@@ -20,10 +21,12 @@ REPO = Path(__file__).resolve().parents[1]
 BIN2 = REPO / 'extracted/hack_x/data/Data_arc_pac/bin2.pac'   # hack card data (== base) + hack packs
 BIN1 = REPO / 'extracted/hack_x/data/Data_arc_pac/bin.pac'    # pack names + index
 PACKPAC = REPO / 'extracted/hack_x/data/Data_arc_pac/pack.pac'  # pack box art
+CARDPAC = REPO / 'extracted/hack_x/data/Data_arc_pac/card.pac'  # per-card 64x64 art
 CDB = REPO / 'data/cards.cdb'                                 # ground-truth (ProjectIgnis/BabelCDB)
 CARDS_JSON = REPO / 'data/cards.json'
 CARDS_JS = REPO / 'cardtool/web/cards.js'
 PACKS_DIR = REPO / 'cardtool/web/packs'
+CARDART_DIR = REPO / 'cardtool/web/cardart'
 RARITY = {0: 'Common', 4: 'Rare', 3: 'Super Rare', 2: 'Ultra Rare'}
 
 ATTR = {1: 'LIGHT', 2: 'DARK', 3: 'WATER', 4: 'FIRE', 5: 'EARTH', 6: 'WIND', 7: 'DIVINE'}
@@ -78,11 +81,40 @@ def build_packs():
     return out
 
 
+def image_ids():
+    """cdb name->id (main artwork) and the set of ids, to resolve ygoprodeck art for
+    cards whose ROM password is 0 (e.g. the Egyptian Gods -> 10000000, ...)."""
+    if not CDB.exists():
+        return {}, set()
+    con = sqlite3.connect(CDB)
+    idset = {i for (i,) in con.execute('select id from datas')}
+    name2id = {}
+    for name, i in con.execute('select t.name, d.id from datas d join texts t on d.id=t.id order by d.alias'):
+        name2id.setdefault(name.lower(), i)
+    return name2id, idset
+
+
+def card_art_offsets():
+    """Return (card.pac bytes, NTBG image offsets); see docs/card-format.md."""
+    raw = open(CARDPAC, 'rb').read()
+    offs, i = [], 0
+    while True:
+        j = raw.find(b'NTBG', i)
+        if j < 0:
+            break
+        offs.append(j); i = j + 4
+    return raw, offs
+
+
 def extract(bin2_path=BIN2):
     files = pac.unpack(open(bin2_path, 'rb').read())
     indx, name, desc = files['card_indx_e.bin'], files['card_name_e.bin'], files['card_desc_e.bin']
     prop, passwd, pack = files['card_prop.bin'], files['card_pass.bin'], files['card_pack.bin']
     packs = build_packs()
+    name2id, idset = image_ids()
+    art_raw, art_offs = card_art_offsets()
+    art_base = len(art_offs) // 2
+    CARDART_DIR.mkdir(parents=True, exist_ok=True)
     n = len(indx) // 8 - 1                       # last record is the offset sentinel
 
     cards = []
@@ -98,6 +130,8 @@ def extract(bin2_path=BIN2):
         atk_r, def_r = (p1 >> 14) & 0x1FF, (p1 >> 23) & 0x1FF
         pw = struct.unpack_from('<I', passwd, i * 4)[0]
         rarity, pack_id = pack[i * 8], pack[i * 8 + 3]
+        aj = art_offs[art_base + i]
+        packimg.decode_ntbg(art_raw[aj:aj + struct.unpack_from('<I', art_raw, aj + 8)[0]]).save(CARDART_DIR / f'{i}.png')
 
         card = {
             'idx': i,
@@ -105,6 +139,8 @@ def extract(bin2_path=BIN2):
             'name': nm,
             'effect': cstr(desc, doff),
             'password': pw or None,
+            'imgId': pw if (pw and pw in idset) else name2id.get(nm.lower()),
+            'art': f'cardart/{i}.png',
             'cardType': ctype,
             'types': tags,
             'kind': '/'.join(tags),
