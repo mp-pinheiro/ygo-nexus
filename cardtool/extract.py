@@ -17,6 +17,7 @@ import pac
 
 REPO = Path(__file__).resolve().parents[1]
 BIN2 = REPO / 'extracted/hack_x/data/Data_arc_pac/bin2.pac'   # hack card data (== base) + hack packs
+BIN1 = REPO / 'extracted/hack_x/data/Data_arc_pac/bin.pac'    # pack names + index
 CDB = REPO / 'data/cards.cdb'                                 # ground-truth (ProjectIgnis/BabelCDB)
 CARDS_JSON = REPO / 'data/cards.json'
 CARDS_JS = REPO / 'cardtool/web/cards.js'
@@ -50,10 +51,23 @@ def cstr(buf, off):
     return buf[off:end].decode('latin1')
 
 
+def pack_names(bin1_path=BIN1):
+    f = pac.unpack(open(bin1_path, 'rb').read())
+    names, indx = f['pack_nameeng.bin'], f['pack_indxeng.bin']
+    out = {}
+    for pid in range(1, len(indx) // 8):
+        off = struct.unpack_from('<I', indx, pid * 8)[0]
+        s = names[off:names.find(b'\x00', off)].decode('cp1252', 'replace').strip()
+        if s:
+            out[pid] = s
+    return out
+
+
 def extract(bin2_path=BIN2):
     files = pac.unpack(open(bin2_path, 'rb').read())
     indx, name, desc = files['card_indx_e.bin'], files['card_name_e.bin'], files['card_desc_e.bin']
     prop, passwd, pack = files['card_prop.bin'], files['card_pass.bin'], files['card_pack.bin']
+    packs = pack_names()
     n = len(indx) // 8 - 1                       # last record is the offset sentinel
 
     cards = []
@@ -85,7 +99,7 @@ def extract(bin2_path=BIN2):
             'atk': (0 if atk_r == 0x1FF else atk_r * 10) if ctype == 'Monster' else None,
             'def': (0 if def_r == 0x1FF else def_r * 10) if ctype == 'Monster' else None,
             'icon': ICON.get((p2 >> 14) & 0x7) if ctype != 'Monster' else None,
-            'pack': pack_id or None,
+            'pack': packs.get(pack_id),
             'rarity': rarity or None,
         }
         cards.append(card)
