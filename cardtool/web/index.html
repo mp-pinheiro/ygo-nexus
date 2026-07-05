@@ -11,19 +11,21 @@
     --mon:#c8933b; --spell:#1d9a8a; --trap:#b5427f;
   }
   * { box-sizing:border-box; }
-  body { margin:0; background:var(--bg); color:var(--txt);
+  body { margin:0; background:var(--bg); color:var(--txt); height:100vh;
+    display:flex; flex-direction:column; overflow:hidden;
     font:14px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif; }
-  header { position:sticky; top:0; z-index:5; background:var(--panel);
+  header { flex:0 0 auto; background:var(--panel);
     border-bottom:1px solid var(--line); padding:10px 16px; display:flex;
-    align-items:center; gap:14px; flex-wrap:wrap; }
+    align-items:center; gap:12px 14px; flex-wrap:wrap; }
   header h1 { font-size:16px; margin:0; color:var(--accent); white-space:nowrap; }
   #q { flex:1; min-width:220px; background:var(--panel2); border:1px solid var(--line);
     color:var(--txt); padding:9px 12px; border-radius:8px; font-size:15px; }
   #q:focus { outline:none; border-color:var(--accent2); }
   #count { color:var(--dim); font-size:13px; white-space:nowrap; }
-  .layout { display:grid; grid-template-columns:250px 1fr; gap:0; }
-  aside { border-right:1px solid var(--line); padding:14px; height:calc(100vh - 57px);
-    overflow-y:auto; position:sticky; top:57px; }
+  .searchin { flex-basis:100%; display:flex; align-items:center; flex-wrap:wrap; gap:6px; }
+  .searchin .lbl { color:var(--dim); font-size:12px; }
+  .layout { flex:1 1 auto; min-height:0; display:grid; grid-template-columns:250px 1fr; }
+  aside { border-right:1px solid var(--line); padding:14px; overflow-y:auto; }
   .fg { margin-bottom:16px; }
   .fg h3 { margin:0 0 7px; font-size:11px; letter-spacing:.08em; text-transform:uppercase;
     color:var(--dim); font-weight:600; }
@@ -32,6 +34,7 @@
     padding:3px 9px; border-radius:12px; cursor:pointer; font-size:12px; user-select:none; }
   .chip:hover { border-color:var(--accent2); }
   .chip.on { background:var(--accent2); border-color:var(--accent2); color:#fff; }
+  .chip.act { border-color:var(--accent); color:var(--accent); }
   .range { display:flex; align-items:center; gap:6px; }
   .range input { width:100%; background:var(--panel2); border:1px solid var(--line);
     color:var(--txt); padding:5px 7px; border-radius:6px; }
@@ -41,17 +44,21 @@
   button.reset:hover { border-color:var(--accent); color:var(--accent); }
   label.toggle { display:flex; align-items:center; gap:8px; color:var(--dim); cursor:pointer; }
   label.toggle.disabled { opacity:.5; cursor:not-allowed; }
-  main { height:calc(100vh - 57px); overflow-y:auto; }
+  main { overflow:auto; }
   table { width:100%; border-collapse:collapse; }
   thead th { position:sticky; top:0; background:var(--panel); text-align:left;
     padding:8px 10px; font-size:11px; letter-spacing:.05em; text-transform:uppercase;
     color:var(--dim); border-bottom:1px solid var(--line); cursor:pointer; white-space:nowrap; }
   thead th:hover { color:var(--accent); }
+  thead th.sorted { color:var(--accent); }
+  .ind { color:var(--dim); font-size:10px; margin-left:2px; }
+  th.sorted .ind { color:var(--accent); }
   tbody tr { border-bottom:1px solid var(--line); cursor:pointer; }
   tbody tr:hover { background:var(--panel2); }
   td { padding:7px 10px; vertical-align:top; }
   td.name { font-weight:600; }
   td.num { text-align:right; font-variant-numeric:tabular-nums; color:var(--dim); }
+  .eff { max-width:520px; white-space:pre-wrap; color:var(--dim); font-size:12.5px; }
   .badge { display:inline-block; padding:1px 7px; border-radius:10px; font-size:11px;
     font-weight:600; }
   .t-Monster { background:rgba(200,147,59,.18); color:var(--mon); }
@@ -59,12 +66,19 @@
   .t-Trap { background:rgba(181,66,127,.2); color:var(--trap); }
   .sub { color:var(--dim); font-size:12px; }
   .more { padding:16px; text-align:center; color:var(--dim); }
+  /* hover card preview */
+  #preview { position:fixed; width:176px; border-radius:9px; display:none; z-index:40;
+    pointer-events:none; border:1px solid var(--line); background:var(--panel2);
+    box-shadow:0 6px 26px rgba(0,0,0,.7); }
   /* detail modal */
   #detail { position:fixed; inset:0; background:rgba(0,0,0,.55); display:none;
     align-items:center; justify-content:center; z-index:20; }
   #detail.show { display:flex; }
   .card { background:var(--panel); border:1px solid var(--line); border-radius:12px;
-    max-width:560px; width:92%; max-height:86vh; overflow-y:auto; padding:22px; }
+    max-width:680px; width:94%; max-height:88vh; overflow-y:auto; padding:22px; }
+  .dwrap { display:flex; gap:20px; align-items:flex-start; }
+  .cardimg { width:200px; border-radius:9px; flex-shrink:0; background:var(--panel2); }
+  .dtext { flex:1; min-width:0; }
   .card h2 { margin:0 0 4px; }
   .card .meta { color:var(--dim); margin-bottom:14px; }
   .card .stats { display:flex; gap:18px; flex-wrap:wrap; margin:12px 0; padding:12px 0;
@@ -74,13 +88,15 @@
   .card .stats div b { font-size:16px; }
   .card .effect { white-space:pre-wrap; line-height:1.55; }
   .card .pw { margin-top:14px; color:var(--dim); font-size:12px; }
+  @media (max-width:640px) { .dwrap { flex-direction:column; } .cardimg { width:160px; } }
 </style>
 </head>
 <body>
 <header>
   <h1>◆ Nexus Revival</h1>
-  <input id="q" type="search" placeholder="Search name or effect text…  (multiple words = AND)" autofocus>
+  <input id="q" type="search" placeholder="Search…  (multiple words = AND)" autofocus>
   <span id="count"></span>
+  <div class="searchin" id="searchin"></div>
 </header>
 <div class="layout">
   <aside id="filters"></aside>
@@ -92,6 +108,7 @@
     <div class="more" id="more"></div>
   </main>
 </div>
+<img id="preview" alt="">
 <div id="detail"><div class="card" id="detailCard"></div></div>
 
 <script src="cards.js"></script>
@@ -99,18 +116,58 @@
 const DB = window.CARD_DB;
 if (!DB) document.body.innerHTML = '<p style="padding:24px">cards.js not found. Run <code>python cardtool/extract.py</code> first.</p>';
 const CARDS = DB ? DB.cards : [];
-CARDS.forEach(c => { c._s = (c.name + '\n' + (c.effect||'')).toLowerCase(); });
+const SEARCH_FIELDS = [
+  ['name','Name', c => c.name],
+  ['effect','Effect', c => c.effect],
+  ['cardType','Card type', c => c.cardType],
+  ['kind','Kind', c => c.kind],
+  ['attribute','Attribute', c => c.attribute],
+  ['race','Race', c => c.race],
+  ['icon','Icon', c => c.icon],
+  ['level','Level', c => c.level],
+  ['atk','ATK', c => c.atk],
+  ['def','DEF', c => c.def],
+  ['password','Password', c => c.password],
+];
+CARDS.forEach(c => {
+  c._f = {};
+  for (const [k, , get] of SEARCH_FIELDS) c._f[k] = String(get(c) ?? '').toLowerCase();
+});
+const BYIDX = new Map(CARDS.map(c => [c.idx, c]));
 
 const CAP = 500;                     // max rows rendered at once
 const ATTRS = ['LIGHT','DARK','WATER','FIRE','EARTH','WIND','DIVINE'];
 const uniq = k => [...new Set(CARDS.map(c => c[k]).filter(Boolean))];
 const RACES = uniq('race').sort();
-const KINDS = uniq('kind').sort();
+const KIND_ORDER = ['Normal','Effect','Fusion','Ritual','Synchro','Tuner','Toon','Spirit','Union','Gemini','Token'];
+const KINDTAGS = new Set(CARDS.flatMap(c => c.types || []));
+const KINDS = KIND_ORDER.filter(t => KINDTAGS.has(t));
 const ICONS = uniq('icon').sort();
 
+const SF = {}; SEARCH_FIELDS.forEach(([k]) => SF[k] = (k === 'name' || k === 'effect'));
 const S = { q:'', types:new Set(), attrs:new Set(), races:new Set(), kinds:new Set(),
   icons:new Set(), lvMin:'', lvMax:'', atkMin:'', atkMax:'', defMin:'', defMax:'',
   sort:'name', dir:1 };
+
+const imgSmall = c => c.password ? `https://images.ygoprodeck.com/images/cards_small/${c.password}.jpg` : null;
+const imgFull  = c => c.password ? `https://images.ygoprodeck.com/images/cards/${c.password}.jpg` : null;
+function esc(s){ return String(s).replace(/[&<>"]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m])); }
+
+function buildSearchIn() {
+  const el = document.getElementById('searchin');
+  el.innerHTML = '<span class="lbl">Search in:</span>';
+  SEARCH_FIELDS.forEach(([k, label]) => {
+    const c = document.createElement('span');
+    c.className = 'chip' + (SF[k] ? ' on' : ''); c.textContent = label;
+    c.onclick = () => { SF[k] = !SF[k]; c.classList.toggle('on'); render(); };
+    el.appendChild(c);
+  });
+  const setAll = v => { SEARCH_FIELDS.forEach(([k]) => SF[k] = v); buildSearchIn(); render(); };
+  for (const [label, v] of [['all', true], ['none', false]]) {
+    const b = document.createElement('span'); b.className = 'chip act'; b.textContent = label;
+    b.onclick = () => setAll(v); el.appendChild(b);
+  }
+}
 
 // ---- filters UI ----
 function chipGroup(title, values, set) {
@@ -158,7 +215,6 @@ function reset() {
   Object.assign(S, { types:new Set(), attrs:new Set(), races:new Set(), kinds:new Set(),
     icons:new Set(), lvMin:'', lvMax:'', atkMin:'', atkMax:'', defMin:'', defMax:'' });
   document.getElementById('filters').innerHTML = '';
-  document.querySelectorAll('#filters input').forEach(i => i.value='');
   buildFilters(); render();
 }
 
@@ -171,11 +227,15 @@ function inRange(v, lo, hi) {
   return true;
 }
 function match(c) {
-  if (S.q) { for (const w of S.q.split(/\s+/)) if (w && !c._s.includes(w)) return false; }
+  if (S.q) {
+    let hay = '';
+    for (const [k] of SEARCH_FIELDS) if (SF[k]) hay += c._f[k] + '\n';
+    for (const w of S.q.split(/\s+/)) if (w && !hay.includes(w)) return false;
+  }
   if (S.types.size && !S.types.has(c.cardType)) return false;
   if (S.attrs.size && !S.attrs.has(c.attribute)) return false;
   if (S.races.size && !S.races.has(c.race)) return false;
-  if (S.kinds.size && !S.kinds.has(c.kind)) return false;
+  if (S.kinds.size && !c.types.some(t => S.kinds.has(t))) return false;
   if (S.icons.size && !S.icons.has(c.icon)) return false;
   if (!inRange(c.level, S.lvMin, S.lvMax)) return false;
   if (!inRange(c.atk, S.atkMin, S.atkMax)) return false;
@@ -189,15 +249,23 @@ const COLS = [
   { k:'attribute', label:'Attr' }, { k:'race', label:'Race' },
   { k:'kind', label:'Kind' }, { k:'level', label:'Lv', num:true },
   { k:'atk', label:'ATK', num:true }, { k:'def', label:'DEF', num:true },
+  { k:'effect', label:'Effect' },
 ];
 function buildHead() {
   document.getElementById('head').innerHTML = COLS.map(c =>
-    `<th data-k="${c.k}">${c.label}</th>`).join('');
+    `<th data-k="${c.k}">${c.label} <span class="ind"></span></th>`).join('');
   document.querySelectorAll('#head th').forEach(th => th.onclick = () => {
     const k = th.dataset.k; S.dir = (S.sort === k) ? -S.dir : 1; S.sort = k; render();
   });
 }
-const sortKey = (c, k) => { const v = c[k]; return v == null ? (COLS.find(x=>x.k===k)?.num ? -1 : '') : (v === '?' ? Infinity : v); };
+function markSort() {
+  document.querySelectorAll('#head th').forEach(th => {
+    const active = th.dataset.k === S.sort;
+    th.classList.toggle('sorted', active);
+    th.querySelector('.ind').textContent = active ? (S.dir === 1 ? '▲' : '▼') : '–';
+  });
+}
+const sortKey = (c, k) => { const v = c[k]; return v == null ? (COLS.find(x=>x.k===k)?.num ? -1 : '') : v; };
 function render() {
   S.q = document.getElementById('q').value.trim().toLowerCase();
   let list = CARDS.filter(match);
@@ -205,55 +273,82 @@ function render() {
     return (x<y?-1:x>y?1:0) * S.dir; });
   document.getElementById('count').textContent =
     `${list.length.toLocaleString()} / ${CARDS.length.toLocaleString()} cards`;
-  const shown = list.slice(0, CAP);
-  document.getElementById('rows').innerHTML = shown.map((c,i) => {
+  document.getElementById('rows').innerHTML = list.slice(0, CAP).map(c => {
     const attr = c.attribute ? `<span class="sub">${c.attribute}</span>` : '';
     return `<tr data-i="${c.idx}">
       <td class="name">${esc(c.name)}</td>
       <td><span class="badge t-${c.cardType}">${c.cardType}</span></td>
       <td>${attr}</td><td class="sub">${c.race||''}</td>
-      <td class="sub">${c.kind}${c.tuner && !c.kind.includes('Tuner')?' · Tuner':''}</td>
+      <td class="sub">${c.kind}</td>
       <td class="num">${c.level??''}</td>
       <td class="num">${c.atk??''}</td><td class="num">${c.def??''}</td>
+      <td><div class="eff">${esc(c.effect || '')}</div></td>
     </tr>`; }).join('');
   document.getElementById('more').textContent =
     list.length > CAP ? `Showing first ${CAP} — refine your search to see the rest.` : '';
-  document.querySelectorAll('#rows tr').forEach(tr =>
-    tr.onclick = () => showDetail(CARDS.find(c => c.idx == tr.dataset.i)));
+  markSort();
 }
-function esc(s){ return s.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m])); }
-
 // ---- detail ----
 function showDetail(c) {
   const line = c.cardType === 'Monster'
-    ? [c.attribute, c.race, c.kind + (c.tuner && !c.kind.includes('Tuner') ? '/Tuner' : '')].filter(Boolean).join(' · ')
+    ? [c.attribute, c.race, c.kind].filter(Boolean).join(' · ')
     : [c.cardType, c.icon].filter(Boolean).join(' · ');
   const stats = c.cardType === 'Monster'
     ? `<div class="stats">
          <div><span>Level</span><b>${c.level ?? '—'}</b></div>
          <div><span>ATK</span><b>${c.atk ?? '—'}</b></div>
          <div><span>DEF</span><b>${c.def ?? '—'}</b></div></div>` : '';
+  const full = imgFull(c);
+  const img = full ? `<img class="cardimg" src="${full}" alt="" onerror="this.remove()">` : '';
   document.getElementById('detailCard').innerHTML = `
-    <h2>${esc(c.name)}</h2>
-    <div class="meta"><span class="badge t-${c.cardType}">${c.cardType}</span> &nbsp; ${line}</div>
-    ${stats}
-    <div class="effect">${esc(c.effect || '')}</div>
-    <div class="pw">${c.password ? 'Password ' + String(c.password).padStart(8,'0') : 'No password'} &nbsp;·&nbsp; id ${c.id}${c.pack ? ' · pack ' + c.pack : ''}</div>`;
+    <div class="dwrap">
+      ${img}
+      <div class="dtext">
+        <h2>${esc(c.name)}</h2>
+        <div class="meta"><span class="badge t-${c.cardType}">${c.cardType}</span> &nbsp; ${esc(line)}</div>
+        ${stats}
+        <div class="effect">${esc(c.effect || '')}</div>
+        <div class="pw">${c.password ? 'Password ' + String(c.password).padStart(8,'0') : 'No password'} &nbsp;·&nbsp; id ${c.id}${c.pack ? ' · pack ' + c.pack : ''}</div>
+      </div>
+    </div>`;
   document.getElementById('detail').classList.add('show');
 }
-document.getElementById('detail').onclick = e => {
-  if (e.target.id === 'detail') e.target.classList.remove('show');
-};
 
 // ---- init ----
 if (DB) {
-  buildFilters(); buildHead();
+  buildSearchIn(); buildFilters(); buildHead();
+
+  const rowsEl = document.getElementById('rows');
+  rowsEl.onclick = e => { const tr = e.target.closest('tr'); if (tr) showDetail(BYIDX.get(+tr.dataset.i)); };
+
+  const preview = document.getElementById('preview');
+  const badImg = new Set();
+  let prevUrl = null;
+  preview.onerror = () => { badImg.add(preview.src); preview.style.display = 'none'; };
+  const hidePreview = () => { preview.style.display = 'none'; prevUrl = null; };
+  rowsEl.addEventListener('mousemove', e => {
+    const tr = e.target.closest('tr');
+    const c = tr && BYIDX.get(+tr.dataset.i);
+    const url = c && imgSmall(c);
+    if (!url || badImg.has(url)) return hidePreview();
+    if (url !== prevUrl) { prevUrl = url; preview.src = url; }
+    preview.style.display = 'block';
+    const w = 176, h = 254;
+    let x = e.clientX + 20; if (x + w > innerWidth) x = e.clientX - w - 20;
+    const y = Math.max(8, Math.min(e.clientY - h / 2, innerHeight - h - 8));
+    preview.style.left = x + 'px'; preview.style.top = y + 'px';
+  });
+  rowsEl.addEventListener('mouseleave', hidePreview);
+
   const q = document.getElementById('q');
   let t; q.oninput = () => { clearTimeout(t); t = setTimeout(render, 90); };
+  document.getElementById('detail').onclick = e => {
+    if (e.target.id === 'detail') e.target.classList.remove('show');
+  };
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape') {
-      if (document.getElementById('detail').classList.contains('show'))
-        document.getElementById('detail').classList.remove('show');
+      const d = document.getElementById('detail');
+      if (d.classList.contains('show')) d.classList.remove('show');
       else { q.value=''; render(); q.focus(); }
     }
   });
