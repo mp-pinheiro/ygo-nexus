@@ -78,6 +78,29 @@
     max-width:840px; width:94%; max-height:90vh; overflow-y:auto; padding:24px; }
   .dwrap { display:flex; gap:22px; align-items:flex-start; }
   .cardimg { width:260px; border-radius:9px; flex-shrink:0; background:var(--panel2); cursor:zoom-in; }
+  .pix { image-rendering:pixelated; }
+  .viewer { flex-shrink:0; }
+  .tabs { display:flex; gap:4px; margin-bottom:8px; }
+  .tab { background:var(--panel2); border:1px solid var(--line); color:var(--dim);
+    padding:4px 12px; border-radius:7px; cursor:pointer; font-size:12px; font-family:inherit; }
+  .tab:hover { color:var(--accent); }
+  .tab.active { background:var(--accent2); border-color:var(--accent2); color:#fff; }
+  .ycard { width:240px; border-radius:11px; padding:10px; background:var(--f); color:var(--ft);
+    box-shadow:0 4px 16px rgba(0,0,0,.5); font-size:12px; }
+  .f-normal{--f:linear-gradient(#d8bd82,#c6a366);--ft:#2a230f} .f-effect{--f:linear-gradient(#c17a3f,#a95e2c);--ft:#fff}
+  .f-fusion{--f:linear-gradient(#9a6bb0,#7f4f94);--ft:#fff}   .f-ritual{--f:linear-gradient(#5a82b8,#456ca2);--ft:#fff}
+  .f-synchro{--f:linear-gradient(#eceae2,#cfccc2);--ft:#20242e} .f-token{--f:linear-gradient(#9aa0af,#7f8595);--ft:#fff}
+  .f-spell{--f:linear-gradient(#25b39a,#178972);--ft:#fff}    .f-trap{--f:linear-gradient(#c96296,#b1497c);--ft:#fff}
+  .yc-name{font-weight:700;font-size:14px;margin-bottom:7px;display:flex;justify-content:space-between;align-items:center;gap:6px;line-height:1.15;}
+  .yc-attr{font-size:10px;font-weight:700;background:rgba(0,0,0,.28);border-radius:8px;padding:2px 7px;white-space:nowrap;}
+  .yc-art{border:3px solid #17150e;overflow:hidden;background:#000;aspect-ratio:1;}
+  .yc-art img{width:100%;height:100%;object-fit:cover;display:block;cursor:zoom-in;}
+  .yc-lvl{font-size:12px;color:#f4cf76;margin:5px 0 2px;letter-spacing:1px;text-shadow:0 1px 1px rgba(0,0,0,.5);}
+  .yc-lvl b{color:var(--ft);font-size:10px;letter-spacing:0;}
+  .yc-type{font-weight:600;font-size:11px;margin:4px 0;}
+  .yc-text{background:rgba(255,255,255,.92);color:#151515;border-radius:4px;padding:6px 8px;font-size:10.5px;
+    line-height:1.35;max-height:130px;overflow-y:auto;white-space:pre-wrap;}
+  .yc-stats{text-align:right;font-weight:700;font-size:13px;margin-top:6px;letter-spacing:.5px;}
   .dtext { flex:1; min-width:0; }
   .card h2 { margin:0 0 4px; }
   .card .meta { color:var(--dim); margin-bottom:14px; }
@@ -184,8 +207,8 @@ const S = { q:'', types:new Set(), attrs:new Set(), races:new Set(), kinds:new S
   icons:new Set(), lvMin:'', lvMax:'', atkMin:'', atkMax:'', defMin:'', defMax:'',
   sort:'name', dir:1 };
 
-const imgSmall = c => c.password ? `https://images.ygoprodeck.com/images/cards_small/${c.password}.jpg` : null;
-const imgFull  = c => c.password ? `https://images.ygoprodeck.com/images/cards/${c.password}.jpg` : null;
+const imgSmall = c => c.imgId ? `https://images.ygoprodeck.com/images/cards_small/${c.imgId}.jpg` : null;
+const imgFull  = c => c.imgId ? `https://images.ygoprodeck.com/images/cards/${c.imgId}.jpg` : null;
 function esc(s){ return String(s).replace(/[&<>"]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m])); }
 
 function buildSearchIn() {
@@ -324,8 +347,10 @@ function render() {
   markSort();
 }
 // ---- detail ----
+let curCard = null;
 function showDetail(c) {
   document.getElementById('packpop').classList.remove('show');
+  curCard = c;
   const line = c.cardType === 'Monster'
     ? [c.attribute, c.race, c.kind].filter(Boolean).join(' · ')
     : [c.cardType, c.icon].filter(Boolean).join(' · ');
@@ -334,8 +359,9 @@ function showDetail(c) {
          <div><span>Level</span><b>${c.level ?? '—'}</b></div>
          <div><span>ATK</span><b>${c.atk ?? '—'}</b></div>
          <div><span>DEF</span><b>${c.def ?? '—'}</b></div></div>` : '';
-  const full = imgFull(c);
-  const img = full ? `<img class="cardimg" src="${full}" alt="" onclick="openZoom('${full}')" onerror="this.remove()">` : '';
+  const tabs = imgFull(c) ? `<div class="tabs">
+      <button class="tab" data-m="card" onclick="setArtTab('card')">Card</button>
+      <button class="tab" data-m="art" onclick="setArtTab('art')">Game art</button></div>` : '';
   const meta = [
     c.pack ? `<span class="pill packpill" onmouseenter="packPopEnter(${c.idx}, this)" onmouseleave="packPopLeave()"><b>Pack</b>${esc(c.pack)}</span>` : '',
     c.rarity ? `<span class="pill"><b>Rarity</b>${esc(c.rarity)}</span>` : '',
@@ -344,7 +370,7 @@ function showDetail(c) {
   ].join('');
   document.getElementById('detailCard').innerHTML = `
     <div class="dwrap">
-      ${img}
+      <div class="viewer">${tabs}<div class="viewimg" id="viewimg"></div></div>
       <div class="dtext">
         <h2>${esc(c.name)}</h2>
         <div class="meta"><span class="badge t-${c.cardType}">${c.cardType}</span> &nbsp; ${esc(line)}</div>
@@ -354,10 +380,46 @@ function showDetail(c) {
       </div>
     </div>`;
   document.getElementById('detail').classList.add('show');
+  setArtTab(imgFull(c) ? 'card' : 'art');
 }
-function openZoom(url) {
+const FRAME = c => {
+  if (c.cardType === 'Spell') return 'spell';
+  if (c.cardType === 'Trap') return 'trap';
+  const t = c.types || [];
+  return t.includes('Synchro') ? 'synchro' : t.includes('Fusion') ? 'fusion'
+    : t.includes('Ritual') ? 'ritual' : t.includes('Token') ? 'token'
+    : t.includes('Normal') ? 'normal' : 'effect';
+};
+function cardFrame(c) {
+  const mon = c.cardType === 'Monster';
+  const badge = mon ? c.attribute : c.icon;
+  const lvl = mon && c.level != null
+    ? `<div class="yc-lvl">${'★'.repeat(Math.min(c.level, 12)) || '·'}<b> Lv ${c.level}</b></div>` : '';
+  const typeline = mon
+    ? `[ ${[c.race, ...(c.types || [])].filter(Boolean).join(' / ')} ]`
+    : `[ ${[c.cardType, c.icon].filter(Boolean).join(' / ')} ]`;
+  const stats = mon ? `<div class="yc-stats">ATK / ${c.atk ?? '?'}　DEF / ${c.def ?? '?'}</div>` : '';
+  return `<div class="ycard f-${FRAME(c)}">
+    <div class="yc-name"><span>${esc(c.name)}</span>${badge ? `<span class="yc-attr">${esc(badge)}</span>` : ''}</div>
+    <div class="yc-art"><img class="pix" src="${c.art}" onclick="openZoom('${c.art}',1)"></div>
+    ${lvl}<div class="yc-type">${esc(typeline)}</div>
+    <div class="yc-text">${esc(c.effect || '')}</div>${stats}</div>`;
+}
+function setArtTab(mode) {
+  const c = curCard;
+  if (!c) return;
+  const big = imgFull(c), vi = document.getElementById('viewimg');
+  if (mode === 'card' && big) {
+    vi.innerHTML = `<img class="cardimg" src="${big}" alt="" onclick="openZoom('${big}',0)" onerror="setArtTab('art')">`;
+  } else {
+    mode = 'art';
+    vi.innerHTML = c.art ? cardFrame(c) : '';
+  }
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.m === mode));
+}
+function openZoom(url, pix) {
   const z = document.getElementById('zoom');
-  z.innerHTML = `<img src="${url}" alt="">`;
+  z.innerHTML = `<img class="${pix ? 'pix' : ''}" src="${url}" alt="">`;
   z.classList.add('show');
 }
 
