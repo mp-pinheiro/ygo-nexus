@@ -17,6 +17,7 @@ data/cards.cdb
 # --- Generated card database (regenerate: python cardtool/extract.py) ---
 data/cards.json
 cardtool/web/cards.js
+cardtool/web/packs/
 
 # --- Editor / WSL shell dotfiles ---
 .bash_profile

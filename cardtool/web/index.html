@@ -96,6 +96,25 @@
     align-items:center; justify-content:center; z-index:50; cursor:zoom-out; }
   #zoom.show { display:flex; }
   #zoom img { max-width:92vw; max-height:92vh; border-radius:10px; box-shadow:0 8px 40px rgba(0,0,0,.8); }
+  .packpill { cursor:help; }
+  #packpop { position:fixed; z-index:45; width:320px; max-height:70vh; display:none;
+    flex-direction:column; background:var(--panel); border:1px solid var(--line);
+    border-radius:10px; box-shadow:0 10px 34px rgba(0,0,0,.65); overflow:hidden; }
+  #packpop.show { display:flex; }
+  .pp-head { display:flex; gap:12px; padding:12px; border-bottom:1px solid var(--line); }
+  .pp-head img { width:72px; height:144px; image-rendering:pixelated; border-radius:5px;
+    background:var(--panel2); flex-shrink:0; object-fit:contain; }
+  .pp-title { font-weight:600; line-height:1.3; }
+  .pp-sub { color:var(--dim); font-size:12px; margin-top:4px; }
+  .pp-list { overflow-y:auto; padding:4px 0; }
+  .pp-row { display:flex; align-items:center; gap:8px; padding:4px 12px; cursor:pointer; font-size:12.5px; }
+  .pp-row:hover { background:var(--panel2); }
+  .pp-row.cur { background:rgba(240,180,41,.16); }
+  .pp-row .nm { flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .rr { font-size:10px; font-weight:700; padding:1px 0; border-radius:4px; flex-shrink:0;
+    width:26px; text-align:center; }
+  .rr-C { background:#3a3f52; color:#c7cde0; } .rr-R { background:#26456e; color:#8fbaff; }
+  .rr-S { background:#2b5c55; color:#7fe6d3; } .rr-U { background:#6e5518; color:#f0c869; }
   @media (max-width:640px) { .dwrap { flex-direction:column; } .cardimg { width:180px; } }
 </style>
 </head>
@@ -119,6 +138,7 @@
 <img id="preview" alt="">
 <div id="detail"><div class="card" id="detailCard"></div></div>
 <div id="zoom"></div>
+<div id="packpop"></div>
 
 <script src="cards.js"></script>
 <script>
@@ -144,6 +164,11 @@ CARDS.forEach(c => {
   for (const [k, , get] of SEARCH_FIELDS) c._f[k] = String(get(c) ?? '').toLowerCase();
 });
 const BYIDX = new Map(CARDS.map(c => [c.idx, c]));
+const PACKS = DB ? (DB.packs || {}) : {};
+const PACK_CARDS = {};
+CARDS.forEach(c => { if (c.pack) (PACK_CARDS[c.pack] ||= []).push(c); });
+const RARITY_RANK = { 'Ultra Rare': 0, 'Super Rare': 1, 'Rare': 2, 'Common': 3 };
+const RARITY_BADGE = { 'Common': ['C', 'rr-C'], 'Rare': ['R', 'rr-R'], 'Super Rare': ['SR', 'rr-S'], 'Ultra Rare': ['UR', 'rr-U'] };
 
 const CAP = 500;                     // max rows rendered at once
 const ATTRS = ['LIGHT','DARK','WATER','FIRE','EARTH','WIND','DIVINE'];
@@ -300,6 +325,7 @@ function render() {
 }
 // ---- detail ----
 function showDetail(c) {
+  document.getElementById('packpop').classList.remove('show');
   const line = c.cardType === 'Monster'
     ? [c.attribute, c.race, c.kind].filter(Boolean).join(' · ')
     : [c.cardType, c.icon].filter(Boolean).join(' · ');
@@ -311,7 +337,8 @@ function showDetail(c) {
   const full = imgFull(c);
   const img = full ? `<img class="cardimg" src="${full}" alt="" onclick="openZoom('${full}')" onerror="this.remove()">` : '';
   const meta = [
-    c.pack ? `<span class="pill"><b>Pack</b>${esc(c.pack)}</span>` : '',
+    c.pack ? `<span class="pill packpill" onmouseenter="packPopEnter(${c.idx}, this)" onmouseleave="packPopLeave()"><b>Pack</b>${esc(c.pack)}</span>` : '',
+    c.rarity ? `<span class="pill"><b>Rarity</b>${esc(c.rarity)}</span>` : '',
     c.password ? `<span class="pill"><b>Password</b>${String(c.password).padStart(8,'0')}</span>` : '',
     `<span class="pill"><b>ID</b>${c.id}</span>`,
   ].join('');
@@ -332,6 +359,34 @@ function openZoom(url) {
   const z = document.getElementById('zoom');
   z.innerHTML = `<img src="${url}" alt="">`;
   z.classList.add('show');
+}
+
+let packTimer;
+function packPopEnter(idx, el) {
+  clearTimeout(packTimer);
+  const code = BYIDX.get(idx).pack, meta = PACKS[code];
+  if (!meta) return;
+  const list = (PACK_CARDS[code] || []).slice()
+    .sort((a, b) => (RARITY_RANK[a.rarity] - RARITY_RANK[b.rarity]) || a.name.localeCompare(b.name));
+  const rows = list.map(c => {
+    const [ab, cls] = RARITY_BADGE[c.rarity] || ['', ''];
+    return `<div class="pp-row ${c.idx === idx ? 'cur' : ''}" onclick="showDetail(BYIDX.get(${c.idx}))">
+      <span class="rr ${cls}">${ab}</span><span class="nm">${esc(c.name)}</span></div>`;
+  }).join('');
+  const pp = document.getElementById('packpop');
+  pp.innerHTML = `<div class="pp-head">${meta.img ? `<img src="${meta.img}" alt="">` : ''}
+    <div><div class="pp-title">${esc(meta.full)}</div>
+    <div class="pp-sub">${esc(code)} · ${list.length} card${list.length === 1 ? '' : 's'}</div></div></div>
+    <div class="pp-list">${rows}</div>`;
+  pp.classList.add('show');
+  const r = el.getBoundingClientRect();
+  let x = Math.min(r.left, innerWidth - 332);
+  let y = r.bottom + 8;
+  if (y + pp.offsetHeight > innerHeight - 8) y = Math.max(8, r.top - 8 - pp.offsetHeight);
+  pp.style.left = x + 'px'; pp.style.top = y + 'px';
+}
+function packPopLeave() {
+  packTimer = setTimeout(() => document.getElementById('packpop').classList.remove('show'), 180);
 }
 
 // ---- init ----
@@ -362,14 +417,18 @@ if (DB) {
 
   const q = document.getElementById('q');
   let t; q.oninput = () => { clearTimeout(t); t = setTimeout(render, 90); };
+  const packpop = document.getElementById('packpop');
+  packpop.addEventListener('mouseenter', () => clearTimeout(packTimer));
+  packpop.addEventListener('mouseleave', packPopLeave);
   document.getElementById('detail').onclick = e => {
-    if (e.target.id === 'detail') e.target.classList.remove('show');
+    if (e.target.id === 'detail') { e.target.classList.remove('show'); packpop.classList.remove('show'); }
   };
   document.getElementById('zoom').onclick = () => document.getElementById('zoom').classList.remove('show');
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape') {
       const z = document.getElementById('zoom'), d = document.getElementById('detail');
-      if (z.classList.contains('show')) z.classList.remove('show');
+      if (packpop.classList.contains('show')) packpop.classList.remove('show');
+      else if (z.classList.contains('show')) z.classList.remove('show');
       else if (d.classList.contains('show')) d.classList.remove('show');
       else { q.value=''; render(); q.focus(); }
     }

@@ -14,13 +14,17 @@ import struct
 from pathlib import Path
 
 import pac
+import packimg
 
 REPO = Path(__file__).resolve().parents[1]
 BIN2 = REPO / 'extracted/hack_x/data/Data_arc_pac/bin2.pac'   # hack card data (== base) + hack packs
 BIN1 = REPO / 'extracted/hack_x/data/Data_arc_pac/bin.pac'    # pack names + index
+PACKPAC = REPO / 'extracted/hack_x/data/Data_arc_pac/pack.pac'  # pack box art
 CDB = REPO / 'data/cards.cdb'                                 # ground-truth (ProjectIgnis/BabelCDB)
 CARDS_JSON = REPO / 'data/cards.json'
 CARDS_JS = REPO / 'cardtool/web/cards.js'
+PACKS_DIR = REPO / 'cardtool/web/packs'
+RARITY = {0: 'Common', 4: 'Rare', 3: 'Super Rare', 2: 'Ultra Rare'}
 
 ATTR = {1: 'LIGHT', 2: 'DARK', 3: 'WATER', 4: 'FIRE', 5: 'EARTH', 6: 'WIND', 7: 'DIVINE'}
 RACE = {1: 'Dragon', 2: 'Zombie', 3: 'Fiend', 4: 'Pyro', 5: 'Sea Serpent', 6: 'Rock',
@@ -51,15 +55,26 @@ def cstr(buf, off):
     return buf[off:end].decode('latin1')
 
 
-def pack_names(bin1_path=BIN1):
-    f = pac.unpack(open(bin1_path, 'rb').read())
-    names, indx = f['pack_nameeng.bin'], f['pack_indxeng.bin']
+def build_packs():
+    b1 = pac.unpack(open(BIN1, 'rb').read())
+    names, desc, indx = b1['pack_nameeng.bin'], b1['pack_desceng.bin'], b1['pack_indxeng.bin']
+    pp = pac.unpack(open(PACKPAC, 'rb').read())
+    PACKS_DIR.mkdir(parents=True, exist_ok=True)
     out = {}
     for pid in range(1, len(indx) // 8):
-        off = struct.unpack_from('<I', indx, pid * 8)[0]
-        s = names[off:names.find(b'\x00', off)].decode('cp1252', 'replace').strip()
-        if s:
-            out[pid] = s
+        noff, doff = struct.unpack_from('<II', indx, pid * 8)
+        code = names[noff:names.find(b'\x00', noff)].decode('cp1252', 'replace').strip()
+        if not code:
+            continue
+        full = desc[doff:desc.find(b'\x00', doff)].decode('cp1252', 'replace').strip()
+        img = None
+        key = f'l_pack{pid:02d}.lz5bg'
+        if key in pp:
+            pic = packimg.decode(pp[key])
+            if pic:
+                pic.save(PACKS_DIR / f'{pid}.png')
+                img = f'packs/{pid}.png'
+        out[pid] = {'code': code, 'full': full, 'img': img}
     return out
 
 
@@ -67,7 +82,7 @@ def extract(bin2_path=BIN2):
     files = pac.unpack(open(bin2_path, 'rb').read())
     indx, name, desc = files['card_indx_e.bin'], files['card_name_e.bin'], files['card_desc_e.bin']
     prop, passwd, pack = files['card_prop.bin'], files['card_pass.bin'], files['card_pack.bin']
-    packs = pack_names()
+    packs = build_packs()
     n = len(indx) // 8 - 1                       # last record is the offset sentinel
 
     cards = []
@@ -99,11 +114,11 @@ def extract(bin2_path=BIN2):
             'atk': (0 if atk_r == 0x1FF else atk_r * 10) if ctype == 'Monster' else None,
             'def': (0 if def_r == 0x1FF else def_r * 10) if ctype == 'Monster' else None,
             'icon': ICON.get((p2 >> 14) & 0x7) if ctype != 'Monster' else None,
-            'pack': packs.get(pack_id),
-            'rarity': rarity or None,
+            'pack': packs[pack_id]['code'] if pack_id in packs else None,
+            'rarity': RARITY.get(rarity) if pack_id else None,
         }
         cards.append(card)
-    return cards
+    return cards, packs
 
 
 def validate(cards):
@@ -133,9 +148,10 @@ def validate(cards):
 
 
 if __name__ == '__main__':
-    cards = extract()
+    cards, packs = extract()
+    packs_by_code = {m['code']: {'full': m['full'], 'img': m['img']} for m in packs.values()}
     db = {'game': 'Yu-Gi-Oh! WC2011 Over the Nexus / Nexus Revival', 'count': len(cards),
-          'cards': cards}
+          'packs': packs_by_code, 'cards': cards}
     blob = json.dumps(db, ensure_ascii=False, separators=(',', ':'))
     CARDS_JSON.write_text(blob)
     # cards.js lets index.html run offline over file:// (no fetch/CORS needed)
