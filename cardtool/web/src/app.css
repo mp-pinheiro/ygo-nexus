@@ -36,7 +36,6 @@ aside { border-right:1px solid var(--line); padding:14px; overflow-y:auto; }
   padding:3px 9px; border-radius:12px; cursor:pointer; font-size:12px; user-select:none; }
 .chip:hover { border-color:var(--accent2); }
 .chip.on { background:var(--accent2); border-color:var(--accent2); color:#fff; }
-.chip.act { border-color:var(--accent); color:var(--accent); }
 
 /* Card-type badge (interpolated t-{cardType}). */
 .badge { display:inline-block; padding:1px 7px; border-radius:10px; font-size:11px;
