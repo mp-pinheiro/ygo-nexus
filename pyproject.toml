@@ -1,0 +1,10 @@
+[project]
+name = "ygo-nexus-cht"
+version = "0.1.0"
+description = "Card search tool + ROM-hacking scripts for Yu-Gi-Oh! WC2011 Over the Nexus (Nexus Revival)"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "ndspy",     # NDS ROM / ARM9 / overlay parsing (romhack + card extraction)
+    "capstone",  # ARM disassembly (romhack RE scripts)
+]

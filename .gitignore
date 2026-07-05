@@ -1,0 +1,33 @@
+# --- Python ---
+.venv/
+__pycache__/
+*.pyc
+
+# --- Large / copyrighted binaries (never commit) ---
+roms/
+saves/
+vendor/
+
+# --- Derived from the ROM (regenerate: ndstool -x roms/hack.nds -> extracted/) ---
+extracted/
+
+# --- External ground-truth DB (fetch from github.com/ProjectIgnis/BabelCDB) ---
+data/cards.cdb
+
+# --- Generated card database (regenerate: python cardtool/extract.py) ---
+data/cards.json
+cardtool/web/cards.js
+
+# --- Editor / WSL shell dotfiles ---
+.bash_profile
+.bashrc
+.claude/
+.gitconfig
+.gitmodules
+.idea
+.mcp.json
+.profile
+.ripgreprc
+.vscode
+.zprofile
+.zshrc
