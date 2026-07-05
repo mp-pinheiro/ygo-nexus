@@ -39,6 +39,11 @@ Pack **names** live in `bin.pac` → `pack_nameeng.bin`, indexed by `pack_indxen
 records `[name_off][desc_off]` per pack; record 0 = none). `card_pack.bin`'s `pack` id selects
 the record — e.g. in the hack, id 28 → `TDGS`. Base uses full set names ("THE DUELIST GENESIS").
 
+**Card art** is in `card.pac` as 8612 uncompressed NTBG images = 4306 24×32 followed by 4306
+64×64, both in card-index order — so card `i`'s 64×64 art is the `(4306 + i)`-th NTBG. Unlike
+external art (keyed by password), this is distinct per entry, so it resolves alt-arts and the
+password-0 God cards. Pack/card art share the NTBG format below.
+
 ## `card_prop.bin` — two little-endian uint32 per card
 
 ```
