@@ -35,6 +35,10 @@ Konami slot-table archive (see `cardtool/pac.py`, ported from
 
 Card at sequential index `i`: name = `card_name_e[name_off[i]]`, desc = `card_desc_e[desc_off[i]]`.
 
+Pack **names** live in `bin.pac` → `pack_nameeng.bin`, indexed by `pack_indxeng.bin` (8-byte
+records `[name_off][desc_off]` per pack; record 0 = none). `card_pack.bin`'s `pack` id selects
+the record — e.g. in the hack, id 28 → `TDGS`. Base uses full set names ("THE DUELIST GENESIS").
+
 ## `card_prop.bin` — two little-endian uint32 per card
 
 ```
