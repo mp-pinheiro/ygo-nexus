@@ -49,9 +49,11 @@ Prop2 (bytes 4-7):  kind = bits  0..5    (6b)  enum, see below
                     race = bits 17..21   (5b)  monster type, see below
 ```
 
-**kind** (`Prop2 & 0x3F`): 1 Normal · 3 Effect · 5 Fusion · 7 Fusion/Effect · 9 Ritual ·
-11 Ritual/Effect · 13 Toon · 15 Spirit · 17 Union · 19 Gemini · 27 Spell · 29 Trap ·
-31 Normal Tuner · 33 Effect Tuner · 35 Synchro · 37 Synchro/Effect · 39 Synchro/Effect/Tuner.
+**kind** (`Prop2 & 0x3F`) decodes to a set of composing type tags — a Toon/Fusion/Synchro/…
+monster is *also* an Effect monster: 1 Normal · 3 Effect · 5 Fusion · 7 Fusion+Effect ·
+9 Ritual · 11 Ritual+Effect · 13 Toon+Effect · 15 Spirit+Effect · 17 Union+Effect ·
+19 Gemini+Effect · 21 Token · 27 Spell · 29 Trap · 31 Normal+Tuner · 33 Effect+Tuner ·
+35 Synchro · 37 Synchro+Effect · 39 Synchro+Effect+Tuner.
 
 **race** (`(Prop2>>17) & 0x1F`): 1 Dragon · 2 Zombie · 3 Fiend · 4 Pyro · 5 Sea Serpent ·
 6 Rock · 7 Machine · 8 Fish · 9 Dinosaur · 10 Insect · 11 Beast · 12 Beast-Warrior ·
