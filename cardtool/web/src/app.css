@@ -25,7 +25,7 @@ body { margin:0; background:var(--bg); color:var(--txt); height:100vh;
 #app { flex:1 1 auto; min-height:0; display:flex; flex-direction:column; }
 
 /* Layout shell (owned by App.svelte). */
-.layout { flex:1 1 auto; min-height:0; display:grid; grid-template-columns:250px 1fr; }
+.layout { flex:1 1 auto; min-height:0; display:grid; grid-template-columns:250px minmax(0,1fr) 290px; }
 aside { border-right:1px solid var(--line); padding:14px; overflow-y:auto; }
 
 /* Pixelated rendering for ROM art (interpolated/shared). */

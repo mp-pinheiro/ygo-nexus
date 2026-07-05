@@ -7,6 +7,8 @@
   import LimitBadge from './LimitBadge.svelte'
   import CardFrame from './CardFrame.svelte'
   import { activateKey, clickSelf } from '../lib/a11y.js'
+  import { add, canAdd, copiesOf, maxCopies, sectionOf } from '../lib/stores/deck.svelte.js'
+  import { showToast } from '../lib/stores/toast.svelte.js'
 
   const card = $derived(ui.detailIdx == null ? null : data.byIdx.get(ui.detailIdx))
 
@@ -27,6 +29,16 @@
   }
   function packLeave() {
     schedulePackClose()
+  }
+
+  const copies = $derived(card ? copiesOf(card) : 0)
+  const cap = $derived(card ? maxCopies(card) : 3)
+  const target = $derived(card ? sectionOf(card) : 'main')
+  const canMain = $derived(card ? canAdd(card, target) : { ok: false })
+  const canSide = $derived(card ? canAdd(card, 'side') : { ok: false })
+  const addTo = (section) => {
+    const r = add(card, section)
+    if (!r.ok) showToast(r.reason)
   }
 </script>
 
@@ -51,6 +63,11 @@
         <div class="dtext">
           <h2>{card.name}</h2>
           <div class="meta"><span class="badge t-{card.cardType}">{card.cardType}</span> &nbsp; {line}</div>
+          <div class="deckadd">
+            <button type="button" class="addbtn" disabled={!canMain.ok} title={canMain.ok ? '' : canMain.reason} onclick={() => addTo(target)}>+ {target === 'extra' ? 'Extra' : 'Main'} Deck</button>
+            <button type="button" class="addbtn alt" disabled={!canSide.ok} title={canSide.ok ? '' : canSide.reason} onclick={() => addTo('side')}>+ Side</button>
+            <span class="incount">In deck: {copies} / {cap}</span>
+          </div>
           {#if card.cardType === 'Monster'}
             <div class="stats">
               <div><span>Level</span><b>{card.level ?? '—'}</b></div>
@@ -98,6 +115,13 @@
   .dtext { flex:1; min-width:0; }
   .card h2 { margin:0 0 4px; }
   .card .meta { color:var(--dim); margin-bottom:14px; }
+  .deckadd { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:14px; }
+  .addbtn { background:var(--accent2); border:1px solid var(--accent2); color:#fff;
+    padding:6px 12px; border-radius:8px; cursor:pointer; font-size:12.5px; font-family:inherit; }
+  .addbtn.alt { background:var(--panel2); border-color:var(--line); color:var(--txt); }
+  .addbtn:hover:not(:disabled) { filter:brightness(1.1); }
+  .addbtn:disabled { opacity:.45; cursor:not-allowed; }
+  .incount { color:var(--dim); font-size:12px; font-variant-numeric:tabular-nums; }
   .card .stats { display:flex; gap:18px; flex-wrap:wrap; margin:12px 0; padding:12px 0;
     border-top:1px solid var(--line); border-bottom:1px solid var(--line); }
   .card .stats div span { display:block; font-size:11px; color:var(--dim);

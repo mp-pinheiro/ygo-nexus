@@ -1,62 +1,61 @@
 <script>
-  // PR-1 deck-editor seam: read-only placeholder that proves the reactive deck
-  // store renders. No add/remove UI or persistence yet (PR2). Card idx values
-  // resolve to names through data.byIdx.
-  import { deck, counts, validity } from '../lib/stores/deck.svelte.js'
-  import { data } from '../lib/stores/data.svelte.js'
+  import { active, counts, validity, grouped } from '../lib/stores/deck.svelte.js'
+  import DeckMenu from './DeckMenu.svelte'
+  import DeckEntry from './DeckEntry.svelte'
+  import { previewOn } from '../lib/stores/preview.svelte.js'
 
-  // Section descriptors stay reactive: they read deck arrays + counts getters,
-  // so they recompute whenever the deck store mutates.
-  let sections = $derived([
-    { label: 'Main', ids: deck.main, count: counts.main, limit: '40–60', bad: counts.main < 40 || counts.main > 60 },
-    { label: 'Extra', ids: deck.extra, count: counts.extra, limit: '15', bad: counts.extra > 15 },
-    { label: 'Side', ids: deck.side, count: counts.side, limit: '15', bad: counts.side > 15 },
-  ])
+  const SECTIONS = [
+    { key: 'main', label: 'Main', min: 40, max: 60 },
+    { key: 'extra', label: 'Extra', max: 15 },
+    { key: 'side', label: 'Side', max: 15 },
+  ]
+  const isBad = (s, n) => (s.min ? n < s.min || n > s.max : n > s.max)
+  const limitText = (s) => (s.min ? `${s.min}–${s.max}` : `${s.max}`)
 </script>
 
 <section class="deck">
   <header class="deck-head">
     <h2>Deck Editor</h2>
+    <DeckMenu />
     <div class="summary">
-      {#each sections as sec (sec.label)}
-        <span class="stat" class:bad={sec.bad}>{sec.label} {sec.count}/{sec.limit}</span>
+      {#each SECTIONS as s (s.key)}
+        <span class="stat" class:bad={isBad(s, counts[s.key])}>{s.label} {counts[s.key]}/{limitText(s)}</span>
       {/each}
-      <span class="validity" class:ok={validity.ok}>
-        <span class="dot"></span>{validity.ok ? 'Valid' : 'Invalid'}
-      </span>
+      <span class="validity" class:ok={validity.ok}><span class="dot"></span>{validity.ok ? 'Valid' : 'Invalid'}</span>
     </div>
   </header>
 
-  <div class="cols">
-    {#each sections as sec (sec.label)}
-      <div class="col">
-        <div class="col-head">
-          <span class="col-title">{sec.label}</span>
-          <span class="cnt" class:bad={sec.bad}>{sec.count} / {sec.limit}</span>
+  {#if active.deck}
+    <div class="cols" use:previewOn>
+      {#each SECTIONS as s (s.key)}
+        <div class="col">
+          <div class="col-head">
+            <span class="col-title">{s.label}</span>
+            <span class="cnt" class:bad={isBad(s, counts[s.key])}>{counts[s.key]} / {limitText(s)}</span>
+          </div>
+          {#if counts[s.key]}
+            <div class="col-list">
+              {#each grouped(s.key) as row (row.idx)}
+                <DeckEntry section={s.key} idx={row.idx} count={row.count} />
+              {/each}
+            </div>
+          {:else}
+            <p class="empty">Empty. Click cards in Browse to add.</p>
+          {/if}
         </div>
-        {#if sec.ids.length}
-          <ul>
-            {#each sec.ids as idx, i (i)}
-              <li>{data.byIdx.get(idx)?.name ?? `#${idx}`}</li>
-            {/each}
-          </ul>
-        {:else}
-          <p class="empty">No cards yet. Add cards from Browse (coming soon).</p>
-        {/if}
-      </div>
-    {/each}
-  </div>
+      {/each}
+    </div>
+  {/if}
 </section>
 
 <style>
   .deck {
-    height: 100%;
+    flex: 1 1 auto;
     min-height: 0;
     display: flex;
     flex-direction: column;
     overflow: hidden;
   }
-
   .deck-head {
     flex: 0 0 auto;
     display: flex;
@@ -73,7 +72,6 @@
     color: var(--accent);
     white-space: nowrap;
   }
-
   .summary {
     display: flex;
     align-items: center;
@@ -94,7 +92,6 @@
     border-color: var(--trap);
     color: #e88bb8;
   }
-
   .validity {
     display: inline-flex;
     align-items: center;
@@ -118,7 +115,6 @@
     border-radius: 50%;
     background: currentColor;
   }
-
   .cols {
     flex: 1 1 auto;
     min-height: 0;
@@ -127,19 +123,14 @@
     gap: 1px;
     background: var(--line);
   }
-
   .col {
     background: var(--bg);
     display: flex;
     flex-direction: column;
     min-height: 0;
-    overflow-y: auto;
   }
-
   .col-head {
-    position: sticky;
-    top: 0;
-    z-index: 1;
+    flex: 0 0 auto;
     display: flex;
     align-items: baseline;
     justify-content: space-between;
@@ -163,31 +154,18 @@
   .cnt.bad {
     color: #e88bb8;
   }
-
-  ul {
-    margin: 0;
-    padding: 6px 0;
-    list-style: none;
+  .col-list {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 6px 4px;
   }
-  li {
-    padding: 6px 12px;
-    font-size: 12.5px;
-    border-bottom: 1px solid var(--line);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  li:hover {
-    background: var(--panel2);
-  }
-
   .empty {
     margin: 0;
     padding: 16px 12px;
     color: var(--dim);
     font-size: 12.5px;
   }
-
   @media (max-width: 640px) {
     .cols {
       grid-template-columns: 1fr;

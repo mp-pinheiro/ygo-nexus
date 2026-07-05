@@ -11,9 +11,15 @@
   import ZoomOverlay from './components/ZoomOverlay.svelte'
   import PackPopover from './components/PackPopover.svelte'
   import DeckEditor from './components/DeckEditor.svelte'
+  import DeckPanel from './components/DeckPanel.svelte'
+  import Toast from './components/Toast.svelte'
+  import { loadDecks } from './lib/stores/deck.svelte.js'
 
   // Load the card DB once; the whole app stays gated on data.loaded until then.
-  onMount(loadDB)
+  onMount(() => {
+    loadDB()
+    loadDecks()
+  })
 </script>
 
 <!-- Escape cascade (ui.escape): packpop -> zoom -> detail -> clear search. -->
@@ -44,14 +50,16 @@
     <div class="layout">
       <Filters />
       <CardTable />
+      <DeckPanel />
     </div>
-    <HoverPreview />
-    <CardDetail />
-    <ZoomOverlay />
-    <PackPopover />
   {:else}
     <div class="view"><DeckEditor /></div>
   {/if}
+  <HoverPreview />
+  <CardDetail />
+  <ZoomOverlay />
+  <PackPopover />
+  <Toast />
 {/if}
 
 <style>
