@@ -44,8 +44,12 @@ just web-install                          # install web deps (run once)
 just web-dev                              # Vite dev server -> http://localhost:5173
 ```
 
-Then open `http://localhost:5173`. Search by name/effect text and filter by
-ATK/DEF/level/attribute/type/race/kind.
+Then open `http://localhost:5173`. The search box takes a Google-style query: space-separated
+words are ANDed, `or` unions them, `-word` excludes, and `"…"` matches an exact phrase. Scope a
+term to one field with `field:value` (`name:dragon`, `attr:dark`, `type:spell`, `kind:fusion`)
+or compare numbers with `atk:>2000`, `lv:4..8`, `def:<=1000`; the `?` button beside the box
+lists the syntax. Plain words honor the "Search in" field toggles, and the facet chips plus
+ATK/DEF/level range inputs still filter on top.
 
 To build a production bundle run `just web-build` (output in `cardtool/web/dist/`), then
 `just web-preview` to preview it at `http://localhost:4173` — or serve the build without
