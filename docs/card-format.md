@@ -75,3 +75,22 @@ Enum layout confirmed against the Tag Force editor
 
 Trap Monsters (Embodiment of Apophis, Zoma the Spirit, ...) are stored in trap form
 (atk/def 0); the cdb lists their monster stats, so those 5 rows "mismatch" by design.
+
+## Forbidden/Limited lists (`bin.pac` → `limit*.bin`)
+
+The deck editor's banlist. `bin.pac` carries six historical revisions —
+`limit200609`, `limit200703`, `limit200709`, `limit200809`, `limit200909`, `limit201009` —
+one per OCG Forbidden/Limited List. `limit201009.bin` (OCG September 2010) is the newest and
+the shipped default (47 Forbidden / 67 Limited / 18 Semi-Limited); the rest are the older
+selectable lists.
+
+```
+u16         total       number of restricted entries
+u16         revision    list id (increments per revision); unused by the decoder
+u32         0           padding
+u16[total]  entries     tier = v >> 14    (0 Forbidden, 1 Limited, 2 Semi-Limited)
+                        id   = v & 0x3FFF (14b internal id, same as card_prop)
+```
+
+Only restricted cards are listed; any id absent from the table is Unlimited (3 copies).
+Keyed by the 14-bit internal id, **not** the sequential card index.
