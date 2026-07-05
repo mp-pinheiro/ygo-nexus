@@ -10,7 +10,12 @@
     --txt:#e6e8ef; --dim:#9aa2b8; --accent:#f0b429; --accent2:#4f7cff;
     --mon:#c8933b; --spell:#1d9a8a; --trap:#b5427f;
   }
-  * { box-sizing:border-box; }
+  * { box-sizing:border-box; scrollbar-width:thin; scrollbar-color:var(--line) transparent; }
+  ::-webkit-scrollbar { width:11px; height:11px; }
+  ::-webkit-scrollbar-track { background:transparent; }
+  ::-webkit-scrollbar-thumb { background:var(--line); border-radius:6px; }
+  ::-webkit-scrollbar-thumb:hover { background:#434b63; }
+  ::-webkit-scrollbar-corner { background:transparent; }
   body { margin:0; background:var(--bg); color:var(--txt); height:100vh;
     display:flex; flex-direction:column; overflow:hidden;
     font:14px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif; }
@@ -58,6 +63,10 @@
   td { padding:7px 10px; vertical-align:top; }
   td.name { font-weight:600; }
   td.num { text-align:right; font-variant-numeric:tabular-nums; color:var(--dim); }
+  .thumb-h { width:1px; }
+  td.thumb { padding:4px 4px 4px 12px; width:1px; }
+  td.thumb img { width:34px; height:34px; object-fit:cover; image-rendering:pixelated;
+    border-radius:4px; background:var(--panel2); display:block; }
   .eff { max-width:520px; white-space:pre-wrap; color:var(--dim); font-size:12.5px; }
   .badge { display:inline-block; padding:1px 7px; border-radius:10px; font-size:11px;
     font-weight:600; }
@@ -67,7 +76,7 @@
   .sub { color:var(--dim); font-size:12px; }
   .more { padding:16px; text-align:center; color:var(--dim); }
   /* hover card preview */
-  #preview { position:fixed; width:176px; border-radius:9px; display:none; z-index:40;
+  #preview { position:fixed; width:176px; border-radius:9px; display:none; z-index:60;
     pointer-events:none; border:1px solid var(--line); background:var(--panel2);
     box-shadow:0 6px 26px rgba(0,0,0,.7); }
   /* detail modal */
@@ -310,17 +319,19 @@ const COLS = [
   { k:'effect', label:'Effect' },
 ];
 function buildHead() {
-  document.getElementById('head').innerHTML = COLS.map(c =>
+  document.getElementById('head').innerHTML = '<th class="thumb-h"></th>' + COLS.map(c =>
     `<th data-k="${c.k}">${c.label} <span class="ind"></span></th>`).join('');
-  document.querySelectorAll('#head th').forEach(th => th.onclick = () => {
+  document.querySelectorAll('#head th').forEach(th => { if (!th.dataset.k) return; th.onclick = () => {
     const k = th.dataset.k; S.dir = (S.sort === k) ? -S.dir : 1; S.sort = k; render();
-  });
+  }; });
 }
 function markSort() {
   document.querySelectorAll('#head th').forEach(th => {
+    const ind = th.querySelector('.ind');
+    if (!ind) return;
     const active = th.dataset.k === S.sort;
     th.classList.toggle('sorted', active);
-    th.querySelector('.ind').textContent = active ? (S.dir === 1 ? '▲' : '▼') : '–';
+    ind.textContent = active ? (S.dir === 1 ? '▲' : '▼') : '–';
   });
 }
 const sortKey = (c, k) => { const v = c[k]; return v == null ? (COLS.find(x=>x.k===k)?.num ? -1 : '') : v; };
@@ -334,6 +345,7 @@ function render() {
   document.getElementById('rows').innerHTML = list.slice(0, CAP).map(c => {
     const attr = c.attribute ? `<span class="sub">${c.attribute}</span>` : '';
     return `<tr data-i="${c.idx}">
+      <td class="thumb"><img class="pix" src="${c.art}" loading="lazy" alt=""></td>
       <td class="name">${esc(c.name)}</td>
       <td><span class="badge t-${c.cardType}">${c.cardType}</span></td>
       <td>${attr}</td><td class="sub">${c.race||''}</td>
@@ -432,7 +444,7 @@ function packPopEnter(idx, el) {
     .sort((a, b) => (RARITY_RANK[a.rarity] - RARITY_RANK[b.rarity]) || a.name.localeCompare(b.name));
   const rows = list.map(c => {
     const [ab, cls] = RARITY_BADGE[c.rarity] || ['', ''];
-    return `<div class="pp-row ${c.idx === idx ? 'cur' : ''}" onclick="showDetail(BYIDX.get(${c.idx}))">
+    return `<div class="pp-row ${c.idx === idx ? 'cur' : ''}" data-i="${c.idx}" onclick="showDetail(BYIDX.get(${c.idx}))">
       <span class="rr ${cls}">${ab}</span><span class="nm">${esc(c.name)}</span></div>`;
   }).join('');
   const pp = document.getElementById('packpop');
@@ -463,25 +475,29 @@ if (DB) {
   let prevUrl = null;
   preview.onerror = () => { badImg.add(preview.src); preview.style.display = 'none'; };
   const hidePreview = () => { preview.style.display = 'none'; prevUrl = null; };
-  rowsEl.addEventListener('mousemove', e => {
-    const tr = e.target.closest('tr');
-    const c = tr && BYIDX.get(+tr.dataset.i);
-    const url = c && imgSmall(c);
-    if (!url || badImg.has(url)) return hidePreview();
-    if (url !== prevUrl) { prevUrl = url; preview.src = url; }
-    preview.style.display = 'block';
-    const w = 176, h = 254;
-    let x = e.clientX + 20; if (x + w > innerWidth) x = e.clientX - w - 20;
-    const y = Math.max(8, Math.min(e.clientY - h / 2, innerHeight - h - 8));
-    preview.style.left = x + 'px'; preview.style.top = y + 'px';
-  });
-  rowsEl.addEventListener('mouseleave', hidePreview);
+  function attachPreview(container) {
+    container.addEventListener('mousemove', e => {
+      const row = e.target.closest('[data-i]');
+      const c = row && BYIDX.get(+row.dataset.i);
+      const url = c && imgSmall(c);
+      if (!url || badImg.has(url)) return hidePreview();
+      if (url !== prevUrl) { prevUrl = url; preview.src = url; }
+      preview.style.display = 'block';
+      const w = 176, h = 254;
+      let x = e.clientX + 20; if (x + w > innerWidth) x = e.clientX - w - 20;
+      const y = Math.max(8, Math.min(e.clientY - h / 2, innerHeight - h - 8));
+      preview.style.left = x + 'px'; preview.style.top = y + 'px';
+    });
+    container.addEventListener('mouseleave', hidePreview);
+  }
+  attachPreview(rowsEl);
 
   const q = document.getElementById('q');
   let t; q.oninput = () => { clearTimeout(t); t = setTimeout(render, 90); };
   const packpop = document.getElementById('packpop');
   packpop.addEventListener('mouseenter', () => clearTimeout(packTimer));
   packpop.addEventListener('mouseleave', packPopLeave);
+  attachPreview(packpop);
   document.getElementById('detail').onclick = e => {
     if (e.target.id === 'detail') { e.target.classList.remove('show'); packpop.classList.remove('show'); }
   };
