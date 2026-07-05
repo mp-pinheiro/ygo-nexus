@@ -16,9 +16,13 @@ data/cards.cdb
 
 # --- Generated card database (regenerate: python cardtool/extract.py) ---
 data/cards.json
-cardtool/web/cards.js
-cardtool/web/packs/
-cardtool/web/cardart/
+cardtool/web/public/cards.json
+cardtool/web/public/cardart/
+cardtool/web/public/packs/
+
+# --- Web app (Vite + Svelte) build artifacts ---
+cardtool/web/node_modules/
+cardtool/web/dist/
 
 # --- Editor / WSL shell dotfiles ---
 .bash_profile

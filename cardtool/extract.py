@@ -24,9 +24,9 @@ PACKPAC = REPO / 'extracted/hack_x/data/Data_arc_pac/pack.pac'  # pack box art
 CARDPAC = REPO / 'extracted/hack_x/data/Data_arc_pac/card.pac'  # per-card 64x64 art
 CDB = REPO / 'data/cards.cdb'                                 # ground-truth (ProjectIgnis/BabelCDB)
 CARDS_JSON = REPO / 'data/cards.json'
-CARDS_JS = REPO / 'cardtool/web/cards.js'
-PACKS_DIR = REPO / 'cardtool/web/packs'
-CARDART_DIR = REPO / 'cardtool/web/cardart'
+WEB_JSON = REPO / 'cardtool/web/public/cards.json'
+PACKS_DIR = REPO / 'cardtool/web/public/packs'
+CARDART_DIR = REPO / 'cardtool/web/public/cardart'
 RARITY = {0: 'Common', 4: 'Rare', 3: 'Super Rare', 2: 'Ultra Rare'}
 
 ATTR = {1: 'LIGHT', 2: 'DARK', 3: 'WATER', 4: 'FIRE', 5: 'EARTH', 6: 'WIND', 7: 'DIVINE'}
@@ -190,10 +190,10 @@ if __name__ == '__main__':
           'packs': packs_by_code, 'cards': cards}
     blob = json.dumps(db, ensure_ascii=False, separators=(',', ':'))
     CARDS_JSON.write_text(blob)
-    # cards.js lets index.html run offline over file:// (no fetch/CORS needed)
-    CARDS_JS.write_text('window.CARD_DB = ' + blob + ';')
+    WEB_JSON.parent.mkdir(parents=True, exist_ok=True)
+    WEB_JSON.write_text(blob)
     mon = sum(1 for c in cards if c['cardType'] == 'Monster')
     sp = sum(1 for c in cards if c['cardType'] == 'Spell')
     tr = sum(1 for c in cards if c['cardType'] == 'Trap')
-    print(f"wrote {CARDS_JSON} + {CARDS_JS}: {len(cards)} cards ({mon} monster / {sp} spell / {tr} trap)")
+    print(f"wrote {CARDS_JSON} + {WEB_JSON}: {len(cards)} cards ({mon} monster / {sp} spell / {tr} trap)")
     validate(cards)

@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "moduleResolution": "bundler",
+    "target": "ESNext",
+    "module": "ESNext",
+    "resolveJsonModule": true,
+    /**
+     * svelte-preprocess cannot figure out whether you have
+     * a value or a type, so tell TypeScript to enforce using
+     * `import type` instead of `import` for Types.
+     */
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true,
+    "sourceMap": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    /**
+     * Plain-JS port: disable checkJs to avoid type noise on
+     * runes and untyped card objects.
+     */
+    "checkJs": false,
+    "types": ["vite/client"]
+  },
+  "include": ["src/**/*.js", "src/**/*.svelte"]
+}

@@ -1,0 +1,71 @@
+/* Global tokens + shared/interpolated classes ported from the monolith
+   <style>. Interpolated class names (t-*, f-*, rr-*, .pix) MUST live here
+   because Svelte prunes scoped selectors it can't see used statically.
+   Component-unique/structural CSS lives in each component's scoped <style>. */
+
+:root {
+  --bg:#12141c; --panel:#1b1e2b; --panel2:#232838; --line:#2f3547;
+  --txt:#e6e8ef; --dim:#9aa2b8; --accent:#f0b429; --accent2:#4f7cff;
+  --mon:#c8933b; --spell:#1d9a8a; --trap:#b5427f;
+}
+
+* { box-sizing:border-box; scrollbar-width:thin; scrollbar-color:var(--line) transparent; }
+::-webkit-scrollbar { width:11px; height:11px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:var(--line); border-radius:6px; }
+::-webkit-scrollbar-thumb:hover { background:#434b63; }
+::-webkit-scrollbar-corner { background:transparent; }
+
+body { margin:0; background:var(--bg); color:var(--txt); height:100vh;
+  display:flex; flex-direction:column; overflow:hidden;
+  font:14px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif; }
+
+/* #app is an extra flex child between body and the app; without this it collapses
+   to content height and .layout/.deck lose the height they fill against. */
+#app { flex:1 1 auto; min-height:0; display:flex; flex-direction:column; }
+
+/* Layout shell (owned by App.svelte). */
+.layout { flex:1 1 auto; min-height:0; display:grid; grid-template-columns:250px 1fr; }
+aside { border-right:1px solid var(--line); padding:14px; overflow-y:auto; }
+
+/* Pixelated rendering for ROM art (interpolated/shared). */
+.pix { image-rendering:pixelated; }
+
+/* Chips (shared by SearchBar search-in + Filters facet groups). */
+.chip { background:var(--panel2); border:1px solid var(--line); color:var(--dim);
+  padding:3px 9px; border-radius:12px; cursor:pointer; font-size:12px; user-select:none; }
+.chip:hover { border-color:var(--accent2); }
+.chip.on { background:var(--accent2); border-color:var(--accent2); color:#fff; }
+.chip.act { border-color:var(--accent); color:var(--accent); }
+
+/* Card-type badge (interpolated t-{cardType}). */
+.badge { display:inline-block; padding:1px 7px; border-radius:10px; font-size:11px;
+  font-weight:600; }
+.t-Monster { background:rgba(200,147,59,.18); color:var(--mon); }
+.t-Spell { background:rgba(29,154,138,.18); color:var(--spell); }
+.t-Trap { background:rgba(181,66,127,.2); color:var(--trap); }
+.sub { color:var(--dim); font-size:12px; }
+
+/* In-game card-frame vocabulary (interpolated f-{FRAME(c)}). */
+.ycard { width:240px; border-radius:11px; padding:10px; background:var(--f); color:var(--ft);
+  box-shadow:0 4px 16px rgba(0,0,0,.5); font-size:12px; }
+.f-normal{--f:linear-gradient(#d8bd82,#c6a366);--ft:#2a230f} .f-effect{--f:linear-gradient(#c17a3f,#a95e2c);--ft:#fff}
+.f-fusion{--f:linear-gradient(#9a6bb0,#7f4f94);--ft:#fff}   .f-ritual{--f:linear-gradient(#5a82b8,#456ca2);--ft:#fff}
+.f-synchro{--f:linear-gradient(#eceae2,#cfccc2);--ft:#20242e} .f-token{--f:linear-gradient(#9aa0af,#7f8595);--ft:#fff}
+.f-spell{--f:linear-gradient(#25b39a,#178972);--ft:#fff}    .f-trap{--f:linear-gradient(#c96296,#b1497c);--ft:#fff}
+.yc-name{font-weight:700;font-size:14px;margin-bottom:7px;display:flex;justify-content:space-between;align-items:center;gap:6px;line-height:1.15;}
+.yc-attr{font-size:10px;font-weight:700;background:rgba(0,0,0,.28);border-radius:8px;padding:2px 7px;white-space:nowrap;}
+.yc-art{border:3px solid #17150e;overflow:hidden;background:#000;aspect-ratio:1;}
+.yc-art img{width:100%;height:100%;object-fit:cover;display:block;cursor:zoom-in;}
+.yc-lvl{font-size:12px;color:#f4cf76;margin:5px 0 2px;letter-spacing:1px;text-shadow:0 1px 1px rgba(0,0,0,.5);}
+.yc-lvl b{color:var(--ft);font-size:10px;letter-spacing:0;}
+.yc-type{font-weight:600;font-size:11px;margin:4px 0;}
+.yc-text{background:rgba(255,255,255,.92);color:#151515;border-radius:4px;padding:6px 8px;font-size:10.5px;
+  line-height:1.35;max-height:130px;overflow-y:auto;white-space:pre-wrap;}
+.yc-stats{text-align:right;font-weight:700;font-size:13px;margin-top:6px;letter-spacing:.5px;}
+
+/* Rarity badge (interpolated rr-{cls}) for the pack popover. */
+.rr { font-size:10px; font-weight:700; padding:1px 0; border-radius:4px; flex-shrink:0;
+  width:26px; text-align:center; }
+.rr-C { background:#3a3f52; color:#c7cde0; } .rr-R { background:#26456e; color:#8fbaff; }
+.rr-S { background:#2b5c55; color:#7fe6d3; } .rr-U { background:#6e5518; color:#f0c869; }

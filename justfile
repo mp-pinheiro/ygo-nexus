@@ -6,16 +6,28 @@
 default:
     @just --list
 
-# Build the card database from the ROM -> data/cards.json + cardtool/web/cards.js
+# Build the card database from the ROM -> data/cards.json + cardtool/web/public/
 extract:
     uv run python cardtool/extract.py
 
-# Serve the card search app with live reload (open http://localhost:{{port}})
-serve port="8000":
-    uv run python cardtool/web/serve.py {{port}}
+# Install the web app's npm dependencies (run once)
+web-install:
+    npm --prefix cardtool/web install
 
-# Build the database, then serve it
-run: extract serve
+# Serve the card search app with Vite HMR (http://localhost:5173)
+web-dev:
+    npm --prefix cardtool/web run dev
+
+# Build the web app for production (-> cardtool/web/dist)
+web-build:
+    npm --prefix cardtool/web run build
+
+# Preview the production build (http://localhost:4173)
+web-preview:
+    npm --prefix cardtool/web run preview
+
+# Build the database, then serve it with Vite HMR
+run: extract web-dev
 
 # Report the DP multiplier baked into every roms/*.nds
 check-dp:
@@ -27,4 +39,5 @@ bake-dp mult="4":
 
 # Remove the generated card database
 clean:
-    rm -f data/cards.json cardtool/web/cards.js
+    rm -f data/cards.json cardtool/web/public/cards.json
+    rm -rf cardtool/web/public/cardart cardtool/web/public/packs

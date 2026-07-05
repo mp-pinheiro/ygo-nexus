@@ -11,8 +11,8 @@ Tooling for **Yu-Gi-Oh! 5D's World Championship 2011: Over the Nexus** (`BYYE`) 
 ## Layout
 
 ```
-cardtool/     pac.py (PAC archive unpacker), extract.py (-> data/cards.json + web bundle)
-  web/        index.html + cards.js — open in a browser to search
+cardtool/     pac.py (PAC archive unpacker), extract.py (-> data/cards.json + web public/)
+  web/        Vite + Svelte 5 app (src/, public/, index.html, vite.config.js) — served, not file://
 romhack/      analyze, disasm, compare, bake_dp, bake_all, check_dp, re_* (run from repo root)
 data/         cards.json (generated), cards.cdb (ground-truth, git-ignored)
 roms/         base.nds, hack.nds, hack_dp*.nds            (git-ignored)
@@ -34,14 +34,26 @@ uv sync            # installs ndspy + capstone into .venv
 
 ## Card search tool
 
-The card database lives in `bin2.pac` inside the ROM. Build it, then open the browser:
+The card database lives in `bin2.pac` inside the ROM. `extract.py` writes the database and
+art straight into `cardtool/web/public/` (`cards.json`, `cardart/`, `packs/`), which the
+browser app serves:
 
 ```sh
-.venv/bin/python cardtool/extract.py      # -> data/cards.json + cardtool/web/cards.js
+.venv/bin/python cardtool/extract.py      # -> data/cards.json + cardtool/web/public/
+just web-install                          # install web deps (run once)
+just web-dev                              # Vite dev server -> http://localhost:5173
 ```
 
-Then open `cardtool/web/index.html` in a browser. Search by name/effect text and filter
-by ATK/DEF/level/attribute/type/race/kind.
+Then open `http://localhost:5173`. Search by name/effect text and filter by
+ATK/DEF/level/attribute/type/race/kind.
+
+To build a production bundle run `just web-build` (output in `cardtool/web/dist/`), then
+`just web-preview` to preview it at `http://localhost:4173` — or serve the build without
+Node via `python -m http.server -d cardtool/web/dist`.
+
+The browser is now a served Vite + Svelte 5 app — the old `file://` "open index.html
+directly" workflow is gone, and the web workflow needs Node 20.19+ / 22.12+ (the Python
+extract step is unchanged).
 
 `extract.py` cross-validates its ROM decode against `data/cards.cdb`
 ([ProjectIgnis/BabelCDB](https://github.com/ProjectIgnis/BabelCDB), joined by card
