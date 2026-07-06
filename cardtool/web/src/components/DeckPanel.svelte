@@ -41,7 +41,7 @@
               </span>
             </div>
             {#each grouped(s.key) as row (row.idx)}
-              <DeckEntry section={s.key} idx={row.idx} count={row.count} />
+              <DeckEntry section={s.key} idx={row.idx} count={row.count} detail />
             {/each}
           </div>
         {/each}
