@@ -5,9 +5,10 @@
   // rarity-sorted pack contents and positions itself near the pill's rect.
   import { data } from '../lib/stores/data.svelte.js'
   import { ui, showDetail, cancelPackClose, schedulePackClose } from '../lib/stores/ui.svelte.js'
+  import { media } from '../lib/stores/media.svelte.js'
   import { previewOn } from '../lib/stores/preview.svelte.js'
   import { RARITY_RANK, RARITY_BADGE } from '../lib/cards.js'
-  import { activateKey } from '../lib/a11y.js'
+  import { activateKey, clickSelf } from '../lib/a11y.js'
 
   // Local pack box art is a public/ asset (packs/N.png) -> needs BASE_URL.
   const base = import.meta.env.VITE_DATA_BASE || import.meta.env.BASE_URL
@@ -29,11 +30,16 @@
 
   // Position near the anchor pill after render, flipping above when the popover
   // would overflow the viewport bottom (monolith 456-460). offsetHeight is read
-  // after the DOM updates, so meta drives the reflow on pack change.
+  // after the DOM updates, so meta drives the reflow on pack change. Touch
+  // devices skip this entirely: there the popover is a fixed bottom sheet —
+  // an anchor-positioned floating panel over the detail content swallows
+  // stray taps into pack rows.
   $effect(() => {
-    if (!ui.packpop || !meta || !popEl) return
+    if (!ui.packpop || !meta || !popEl || media.coarse) return
     const r = ui.packpop.rect
-    x = Math.min(r.left, innerWidth - 332)
+    // Lower clamp keeps the popover on-screen when the viewport is narrower
+    // than its 320px width (innerWidth - 332 goes negative on small phones).
+    x = Math.max(8, Math.min(r.left, innerWidth - 332))
     let ny = r.bottom + 8
     if (ny + popEl.offsetHeight > innerHeight - 8) ny = Math.max(8, r.top - 8 - popEl.offsetHeight)
     y = ny
@@ -45,11 +51,15 @@
 </script>
 
 {#if ui.packpop && meta}
+  {#if media.coarse}
+    <div class="pp-scrim" use:clickSelf={() => (ui.packpop = null)}></div>
+  {/if}
   <!-- svelte-ignore a11y_no_static_element_interactions -->
   <div
     id="packpop"
+    class:sheet={media.coarse}
     bind:this={popEl}
-    style="left:{x}px; top:{y}px;"
+    style={media.coarse ? '' : `left:${x}px; top:${y}px;`}
     onmouseenter={cancelPackClose}
     onmouseleave={schedulePackClose}
   >
@@ -87,6 +97,7 @@
     position: fixed;
     z-index: 45;
     width: 320px;
+    max-width: calc(100vw - 16px);
     max-height: 70vh;
     display: flex;
     flex-direction: column;
@@ -143,5 +154,28 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+
+  .pp-scrim {
+    position: fixed;
+    inset: 0;
+    z-index: 44;
+    background: rgba(0, 0, 0, 0.45);
+  }
+  #packpop.sheet {
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: auto;
+    width: auto;
+    max-width: none;
+    max-height: 70dvh;
+    border-radius: 14px 14px 0 0;
+    border-bottom: 0;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  #packpop.sheet .pp-row {
+    padding: 10px 14px;
+    font-size: 13.5px;
   }
 </style>

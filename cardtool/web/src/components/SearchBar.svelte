@@ -174,4 +174,38 @@
     color: var(--txt);
     font-family: ui-monospace, monospace;
   }
+
+  @media (orientation: portrait) {
+    header {
+      padding: 8px 10px;
+      gap: 8px;
+      /* The sticky sort strip sits directly below with the same background;
+         the divider line between the two bars reads as a stray gap. */
+      border-bottom: 0;
+    }
+    header h1 {
+      display: none;
+    }
+    #q {
+      min-width: 0;
+      /* 16px stops iOS Safari from auto-zooming the page on focus. */
+      font-size: 16px;
+      padding: 8px 12px;
+    }
+    #count {
+      font-size: 11px;
+    }
+    .searchin {
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      scrollbar-width: none;
+      padding-bottom: 2px;
+    }
+    .searchin::-webkit-scrollbar {
+      display: none;
+    }
+    .qhelp {
+      font-size: 11px;
+    }
+  }
 </style>

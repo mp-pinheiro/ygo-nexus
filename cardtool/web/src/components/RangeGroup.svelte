@@ -37,4 +37,8 @@
   .range input { width:100%; background:var(--panel2); border:1px solid var(--line);
     color:var(--txt); padding:5px 7px; border-radius:6px; }
   .range span { color:var(--dim); }
+  @media (orientation:portrait) {
+    /* 16px stops iOS Safari from auto-zooming the page on focus. */
+    .range input { font-size:16px; padding:8px; }
+  }
 </style>

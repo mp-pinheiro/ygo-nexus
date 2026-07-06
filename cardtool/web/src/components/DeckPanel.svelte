@@ -1,8 +1,13 @@
 <script>
   import { active, counts, validity, grouped } from '../lib/stores/deck.svelte.js'
+  import { layout, toggleDeck, closeMobilePanels } from '../lib/stores/layout.svelte.js'
   import DeckMenu from './DeckMenu.svelte'
   import DeckEntry from './DeckEntry.svelte'
   import { previewOn } from '../lib/stores/preview.svelte.js'
+
+  // sheet: rendered inside the mobile drawer, where the desktop collapse-to-rail
+  // affordance makes no sense — the header button closes the drawer instead.
+  let { sheet = false } = $props()
 
   const SECTIONS = [
     { key: 'main', label: 'Main', min: 40, max: 60 },
@@ -11,31 +16,45 @@
   ]
 </script>
 
-<div class="deckpanel">
-  <div class="dp-head">
-    <span class="dp-title">Deck</span>
-    <DeckMenu />
-  </div>
-  {#if active.deck}
-    <div class="dp-body" use:previewOn>
-      {#each SECTIONS as s (s.key)}
-        {@const n = counts[s.key]}
-        <div class="sec">
-          <div class="sec-head">
-            <span class="sec-label">{s.label}</span>
-            <span class="sec-count" class:bad={s.min ? n < s.min || n > s.max : n > s.max}>
-              {n}{s.min ? `/${s.min}–${s.max}` : `/${s.max}`}
-            </span>
-          </div>
-          {#each grouped(s.key) as row (row.idx)}
-            <DeckEntry section={s.key} idx={row.idx} count={row.count} />
-          {/each}
-        </div>
-      {/each}
-      <div class="dp-valid" class:ok={validity.ok}>{validity.ok ? '✓ Legal deck' : 'Not legal yet'}</div>
+<div class="deckpanel" class:collapsed={!sheet && !layout.deck}>
+  {#if sheet || layout.deck}
+    <div class="dp-head">
+      <span class="dp-title">Deck</span>
+      <div class="dp-actions">
+        <DeckMenu />
+        {#if sheet}
+          <button class="side-collapse" title="Close deck" aria-label="Close deck" onclick={closeMobilePanels}>×</button>
+        {:else}
+          <button class="side-collapse" title="Collapse deck" aria-label="Collapse deck" aria-expanded="true" onclick={toggleDeck}>›</button>
+        {/if}
+      </div>
     </div>
+    {#if active.deck}
+      <div class="dp-body" use:previewOn>
+        {#each SECTIONS as s (s.key)}
+          {@const n = counts[s.key]}
+          <div class="sec">
+            <div class="sec-head">
+              <span class="sec-label">{s.label}</span>
+              <span class="sec-count" class:bad={s.min ? n < s.min || n > s.max : n > s.max}>
+                {n}{s.min ? `/${s.min}–${s.max}` : `/${s.max}`}
+              </span>
+            </div>
+            {#each grouped(s.key) as row (row.idx)}
+              <DeckEntry section={s.key} idx={row.idx} count={row.count} />
+            {/each}
+          </div>
+        {/each}
+        <div class="dp-valid" class:ok={validity.ok}>{validity.ok ? '✓ Legal deck' : 'Not legal yet'}</div>
+      </div>
+    {:else}
+      <div class="dp-empty">No deck.</div>
+    {/if}
   {:else}
-    <div class="dp-empty">No deck.</div>
+    <button class="side-rail" title="Show deck" aria-label="Show deck" aria-expanded="false" onclick={toggleDeck}>
+      <span class="chev" aria-hidden="true">‹</span>
+      <span class="rail-label">Deck</span>
+    </button>
   {/if}
 </div>
 
@@ -59,6 +78,11 @@
   .dp-title {
     font-weight: 600;
     color: var(--accent);
+  }
+  .dp-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
   }
   .dp-body {
     overflow-y: auto;

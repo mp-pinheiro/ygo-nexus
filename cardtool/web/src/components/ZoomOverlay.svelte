@@ -23,6 +23,8 @@
   #zoom img {
     max-width: 92vw;
     max-height: 92vh;
+    /* dvh variant keeps the image clear of the collapsing mobile URL bar. */
+    max-height: 92dvh;
     border-radius: 10px;
     box-shadow: 0 8px 40px rgba(0, 0, 0, .8);
   }

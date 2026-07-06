@@ -3,6 +3,7 @@
   // 420-431, backdrop close 501-503). Shown when ui.detailIdx != null.
   import { data } from '../lib/stores/data.svelte.js'
   import { ui, closeDetail, setArtTab, openZoom, cancelPackClose, schedulePackClose } from '../lib/stores/ui.svelte.js'
+  import { media } from '../lib/stores/media.svelte.js'
   import { imgFull } from '../lib/cards.js'
   import LimitBadge from './LimitBadge.svelte'
   import CardFrame from './CardFrame.svelte'
@@ -23,12 +24,25 @@
   // Pack pill hover -> pack popover (monolith packPopEnter/packPopLeave). The
   // 180ms close scheduled on leave is shared with PackPopover through ui.svelte.js,
   // so moving the cursor onto the popover cancels the pill's pending close.
+  // On touch the enter path MUST stay dead: taps emit focus/mouseenter before
+  // click, so an enter-opened popover mounts under the finger and the click
+  // falls through onto a pack row — the pill toggles on click instead.
   function packEnter(e) {
+    if (media.coarse) return
     cancelPackClose()
     ui.packpop = { idx: card.idx, rect: e.currentTarget.getBoundingClientRect() }
   }
   function packLeave() {
     schedulePackClose()
+  }
+  function packClick(e) {
+    if (!media.coarse) return
+    if (ui.packpop) {
+      ui.packpop = null
+      return
+    }
+    cancelPackClose()
+    ui.packpop = { idx: card.idx, rect: e.currentTarget.getBoundingClientRect() }
   }
 
   const copies = $derived(card ? copiesOf(card) : 0)
@@ -45,6 +59,9 @@
 {#if card}
   <div id="detail" use:clickSelf={closeDetail}>
     <div class="card">
+      <!-- Mobile-only: the modal goes full-screen there, so the close-by-backdrop
+           affordance disappears and an explicit button is required. -->
+      <button class="dclose" aria-label="Close" onclick={closeDetail}>×</button>
       <div class="dwrap">
         <div class="viewer">
           {#if imgFull(card)}
@@ -81,7 +98,7 @@
               <span class="pill"><b>Limit</b><LimitBadge limit={card.limit} size={16} /> {card.limit}</span>
             {/if}
             {#if card.pack}
-              <span class="pill packpill" role="button" tabindex="0" onmouseenter={packEnter} onmouseleave={packLeave} onfocus={packEnter} onblur={packLeave}><b>Pack</b>{card.pack}</span>
+              <span class="pill packpill" role="button" tabindex="0" onmouseenter={packEnter} onmouseleave={packLeave} onfocus={packEnter} onblur={packLeave} onclick={packClick} onkeydown={activateKey(packClick)}><b>Pack</b>{card.pack}</span>
             {/if}
             {#if card.rarity}
               <span class="pill"><b>Rarity</b>{card.rarity}</span>
@@ -102,8 +119,9 @@
      interpolated classes (pix, badge, t-, ycard, yc-) stay global in app.css. */
   #detail { position:fixed; inset:0; background:rgba(0,0,0,.55); display:flex;
     align-items:center; justify-content:center; z-index:20; }
-  .card { background:var(--panel); border:1px solid var(--line); border-radius:12px;
+  .card { position:relative; background:var(--panel); border:1px solid var(--line); border-radius:12px;
     max-width:840px; width:94%; max-height:90vh; overflow-y:auto; padding:24px; }
+  .dclose { display:none; }
   .dwrap { display:flex; gap:22px; align-items:flex-start; }
   .cardimg { width:260px; border-radius:9px; flex-shrink:0; background:var(--panel2); cursor:zoom-in; }
   .viewer { flex-shrink:0; }
@@ -134,5 +152,17 @@
     padding:4px 10px; font-size:12px; color:var(--dim); }
   .pill b { color:var(--txt); font-weight:600; margin-right:6px; }
   .packpill { cursor:help; }
-  @media (max-width:640px) { .dwrap { flex-direction:column; } .cardimg { width:180px; } }
+  @media (orientation:portrait) {
+    #detail { align-items:stretch; }
+    .card { width:100%; max-width:none; max-height:none; border-radius:0; border:0;
+      padding:16px 14px calc(16px + env(safe-area-inset-bottom)); }
+    .dclose { display:grid; place-items:center; position:absolute; top:10px; right:10px;
+      width:36px; height:36px; border-radius:50%; background:var(--panel2);
+      border:1px solid var(--line); color:var(--txt); font-size:20px; cursor:pointer; z-index:1; }
+    .dwrap { flex-direction:column; }
+    .viewer { align-self:center; }
+    .cardimg { width:min(240px, 60vw); }
+    .card h2 { padding-right:40px; }
+    .addbtn { padding:10px 14px; }
+  }
 </style>

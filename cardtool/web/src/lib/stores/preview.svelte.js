@@ -7,6 +7,10 @@ import { imgSmall } from '../cards.js'
 
 export const preview = $state({ url: null, x: 0, y: 0, visible: false })
 
+// Touch browsers fire synthetic mousemove on tap, which would flash the
+// thumbnail at the tap point; hover previews only make sense with a pointer.
+const noHover = matchMedia('(hover: none)')
+
 const badImg = new Set()
 
 export function markBad(url) {
@@ -16,6 +20,7 @@ export function markBad(url) {
 
 export function previewOn(node) {
   const onMove = (e) => {
+    if (noHover.matches) return
     const el = e.target.closest('[data-i]')
     const card = el && data.byIdx.get(+el.dataset.i)
     const url = card && imgSmall(card)

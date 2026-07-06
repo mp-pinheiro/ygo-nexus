@@ -22,4 +22,12 @@
     z-index: 80;
     pointer-events: none;
   }
+  @media (orientation: portrait) {
+    /* Clears the bottom action bar so the toast is not covered by it. */
+    .toast {
+      bottom: calc(68px + env(safe-area-inset-bottom));
+      max-width: 92vw;
+      text-align: center;
+    }
+  }
 </style>

@@ -9,7 +9,8 @@
   --mon:#c8933b; --spell:#1d9a8a; --trap:#b5427f;
 }
 
-* { box-sizing:border-box; scrollbar-width:thin; scrollbar-color:var(--line) transparent; }
+* { box-sizing:border-box; scrollbar-width:thin; scrollbar-color:var(--line) transparent;
+  -webkit-tap-highlight-color:transparent; }
 ::-webkit-scrollbar { width:11px; height:11px; }
 ::-webkit-scrollbar-track { background:transparent; }
 ::-webkit-scrollbar-thumb { background:var(--line); border-radius:6px; }
@@ -17,6 +18,9 @@
 ::-webkit-scrollbar-corner { background:transparent; }
 
 body { margin:0; background:var(--bg); color:var(--txt); height:100vh;
+  /* dvh tracks the collapsing mobile browser chrome; the vh line above is the
+     fallback for engines without it. */
+  height:100dvh;
   display:flex; flex-direction:column; overflow:hidden;
   font:14px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif; }
 
@@ -24,9 +28,31 @@ body { margin:0; background:var(--bg); color:var(--txt); height:100vh;
    to content height and .layout/.deck lose the height they fill against. */
 #app { flex:1 1 auto; min-height:0; display:flex; flex-direction:column; }
 
-/* Layout shell (owned by App.svelte). */
-.layout { flex:1 1 auto; min-height:0; display:grid; grid-template-columns:250px minmax(0,1fr) 290px; }
+/* Layout shell (owned by App.svelte). App.svelte overrides grid-template-columns
+   inline from the collapse store, so keep this base value in sync as a fallback. */
+.layout { flex:1 1 auto; min-height:0; display:grid; grid-template-columns:250px minmax(0,1fr) 290px;
+  transition:grid-template-columns .18s ease; }
 aside { border-right:1px solid var(--line); padding:14px; overflow-y:auto; }
+
+/* No @media guard needed: .mobile only exists in the DOM branch App.svelte
+   mounts under the portrait matchMedia, so a media query here would be dead.
+   The -1px overlap absorbs DPR rounding hairlines at the fractional-height
+   header boundary, so the sort strip always meets the search header flush. */
+.layout.mobile { display:flex; flex-direction:column; margin-top:-1px; }
+.layout.mobile main { flex:1 1 auto; min-height:0; }
+
+/* Collapsible side-panel controls, shared by Filters + DeckPanel. */
+.side-collapse { background:var(--panel2); border:1px solid var(--line); color:var(--dim);
+  width:24px; height:24px; border-radius:6px; cursor:pointer; display:inline-grid;
+  place-items:center; font-size:15px; line-height:1; flex-shrink:0; }
+.side-collapse:hover { border-color:var(--accent2); color:var(--txt); }
+.side-rail { width:100%; height:100%; display:flex; flex-direction:column; align-items:center;
+  gap:12px; padding:12px 0; background:none; border:0; color:var(--dim); cursor:pointer;
+  font-family:inherit; }
+.side-rail:hover { color:var(--txt); background:var(--panel2); }
+.side-rail .chev { font-size:18px; line-height:1; }
+.side-rail .rail-label { writing-mode:vertical-rl; text-transform:uppercase;
+  letter-spacing:.12em; font-size:11px; font-weight:600; }
 
 /* Pixelated rendering for ROM art (interpolated/shared). */
 .pix { image-rendering:pixelated; }
@@ -68,3 +94,9 @@ aside { border-right:1px solid var(--line); padding:14px; overflow-y:auto; }
   width:26px; text-align:center; }
 .rr-C { background:#3a3f52; color:#c7cde0; } .rr-R { background:#26456e; color:#8fbaff; }
 .rr-S { background:#2b5c55; color:#7fe6d3; } .rr-U { background:#6e5518; color:#f0c869; }
+
+/* Mobile (orientation rule mirrored in media.svelte.js): larger touch targets. */
+@media (orientation:portrait) {
+  .chip { padding:6px 12px; font-size:13px; }
+  .side-collapse { width:32px; height:32px; font-size:18px; }
+}

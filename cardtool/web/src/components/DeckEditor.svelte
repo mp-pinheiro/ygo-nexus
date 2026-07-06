@@ -36,7 +36,7 @@
           {#if counts[s.key]}
             <div class="col-list">
               {#each grouped(s.key) as row (row.idx)}
-                <DeckEntry section={s.key} idx={row.idx} count={row.count} />
+                <DeckEntry section={s.key} idx={row.idx} count={row.count} rich />
               {/each}
             </div>
           {:else}
@@ -166,9 +166,35 @@
     color: var(--dim);
     font-size: 12.5px;
   }
-  @media (max-width: 640px) {
+  @media (orientation: portrait) {
+    /* Stack the three sections in ONE scroll: the desktop grid gives each
+       column its own scrollbar, which on a phone would clip Extra/Side
+       (auto rows overflow the fixed-height container). */
     .cols {
-      grid-template-columns: 1fr;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      gap: 0;
+      background: var(--bg);
+    }
+    .col {
+      flex: 0 0 auto;
+      border-bottom: 1px solid var(--line);
+    }
+    .col-head {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+    }
+    .col-list {
+      overflow: visible;
+    }
+    .deck-head {
+      padding: 10px 12px;
+      gap: 8px 10px;
+    }
+    .deck-head h2 {
+      font-size: 14px;
     }
   }
 </style>

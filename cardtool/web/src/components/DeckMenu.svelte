@@ -2,7 +2,17 @@
   import { deck, createDeck, renameDeck, duplicateDeck, deleteDeck, setActive } from '../lib/stores/deck.svelte.js'
 
   let open = $state(false)
+  let dmEl = $state()
+  let alignLeft = $state(false)
   const activeDeck = $derived(deck.list.find((d) => d.id === deck.activeId) ?? null)
+
+  // The menu is right-aligned to the button; when the button sits near the left
+  // viewport edge (Deck Editor header on phones) that pushes the menu off-screen,
+  // so flip to left alignment when a right-aligned menu would clip.
+  function toggle() {
+    if (!open && dmEl) alignLeft = dmEl.getBoundingClientRect().right - 180 < 8
+    open = !open
+  }
 
   function rename() {
     const name = prompt('Rename deck', activeDeck?.name)
@@ -15,12 +25,12 @@
   }
 </script>
 
-<div class="dm">
-  <button type="button" class="deckbtn" aria-haspopup="menu" aria-expanded={open} onclick={() => (open = !open)}>
+<div class="dm" bind:this={dmEl}>
+  <button type="button" class="deckbtn" aria-haspopup="menu" aria-expanded={open} onclick={toggle}>
     {activeDeck?.name ?? 'No deck'} ▾
   </button>
   {#if open}
-    <div class="menu" role="menu">
+    <div class="menu" class:aleft={alignLeft} role="menu">
       {#each deck.list as d (d.id)}
         <button type="button" class="mi" class:on={d.id === deck.activeId} role="menuitem" onclick={() => { setActive(d.id); open = false }}>{d.name}</button>
       {/each}
@@ -59,6 +69,7 @@
     top: calc(100% + 4px);
     z-index: 30;
     min-width: 180px;
+    max-width: calc(100vw - 16px);
     background: var(--panel);
     border: 1px solid var(--line);
     border-radius: 8px;
@@ -68,6 +79,10 @@
     flex-direction: column;
     max-height: 60vh;
     overflow-y: auto;
+  }
+  .menu.aleft {
+    right: auto;
+    left: 0;
   }
   .mi {
     text-align: left;
@@ -79,6 +94,8 @@
     cursor: pointer;
     font-size: 12.5px;
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .mi:hover {
     background: var(--panel2);
@@ -93,5 +110,15 @@
     height: 1px;
     background: var(--line);
     margin: 4px 2px;
+  }
+  @media (orientation: portrait) {
+    .deckbtn {
+      padding: 8px 12px;
+      font-size: 13px;
+    }
+    .mi {
+      padding: 10px 12px;
+      font-size: 13.5px;
+    }
   }
 </style>
