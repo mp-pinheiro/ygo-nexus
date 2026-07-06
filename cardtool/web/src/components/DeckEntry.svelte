@@ -4,8 +4,9 @@
   import { rowAction } from '../lib/stores/ui.svelte.js'
 
   // rich: Deck-tab variant mirroring the Browse rows (type badge, meta line,
-  // effect text); the compact form stays for the narrow Browse side panel.
-  let { section, idx, count, rich = false } = $props()
+  // effect text); detail: compact variant for the narrow side panel showing
+  // type, stats, and a truncated effect; plain compact otherwise.
+  let { section, idx, count, rich = false, detail = false } = $props()
 
   const base = import.meta.env.VITE_DATA_BASE || import.meta.env.BASE_URL
   const card = $derived(data.byIdx.get(idx))
@@ -29,7 +30,7 @@
 </script>
 
 {#if card}
-  <div class="de" class:rich role="button" tabindex="0" title="Remove one" data-i={idx} onclick={click} onkeydown={keydown}>
+  <div class="de" class:rich class:detail role="button" tabindex="0" title="Remove one" data-i={idx} onclick={click} onkeydown={keydown}>
     <img class="pix thumb" data-details src={base + card.art} alt="" />
     {#if rich}
       <div class="body">
@@ -40,6 +41,19 @@
           {#if card.cardType === 'Monster'}<span>Lv {card.level ?? '—'} · {card.atk ?? '—'} / {card.def ?? '—'}</span>{/if}
         </div>
         {#if card.effect}<div class="eff">{card.effect}</div>{/if}
+      </div>
+    {:else if detail}
+      <div class="dbody">
+        <span class="nm"><span class="nmt" data-details>{card.name}</span>{#if count > 1}<span class="ct">×{count}</span>{/if}</span>
+        <div class="dmeta">
+          <span class="badge t-{card.cardType}">{card.cardType}</span>
+          {#if card.cardType === 'Monster'}
+            <span>{card.atk ?? '?'} / {card.def ?? '?'}</span>
+          {:else if card.icon}
+            <span>{card.icon}</span>
+          {/if}
+        </div>
+        {#if card.effect}<div class="deff">{card.effect}</div>{/if}
       </div>
     {:else}
       <span class="nm"><span class="nmt" data-details>{card.name}</span></span>
@@ -88,6 +102,44 @@
     color: var(--dim);
     font-size: 12px;
     font-variant-numeric: tabular-nums;
+  }
+
+  /* Detail mode: compact card info for the narrow side panel */
+  .de.detail {
+    align-items: flex-start;
+    gap: 7px;
+    padding: 5px 8px;
+    border-bottom: 1px solid var(--line);
+    border-radius: 0;
+  }
+  .dbody {
+    flex: 1;
+    min-width: 0;
+  }
+  .dbody .nm {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    font-size: 12.5px;
+  }
+  .dmeta {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 2px;
+    font-size: 11px;
+    color: var(--dim);
+  }
+  .dmeta .badge { font-size: 10px; padding: 0 5px; }
+  .deff {
+    margin-top: 2px;
+    font-size: 11px;
+    line-height: 1.35;
+    color: var(--dim);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
 
   .de.rich {
