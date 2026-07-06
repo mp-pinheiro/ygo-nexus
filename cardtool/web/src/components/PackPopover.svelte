@@ -10,7 +10,7 @@
   import { activateKey } from '../lib/a11y.js'
 
   // Local pack box art is a public/ asset (packs/N.png) -> needs BASE_URL.
-  const base = import.meta.env.BASE_URL
+  const base = import.meta.env.VITE_DATA_BASE || import.meta.env.BASE_URL
 
   let popEl = $state()
   let x = $state(0)

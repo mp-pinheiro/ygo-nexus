@@ -5,7 +5,7 @@
   import { openZoom } from '../lib/stores/ui.svelte.js'
   import { activateKey } from '../lib/a11y.js'
 
-  const base = import.meta.env.BASE_URL
+  const base = import.meta.env.VITE_DATA_BASE || import.meta.env.BASE_URL
 
   let { card } = $props()
 

@@ -5,7 +5,7 @@
 
   let { section, idx, count } = $props()
 
-  const base = import.meta.env.BASE_URL
+  const base = import.meta.env.VITE_DATA_BASE || import.meta.env.BASE_URL
   const card = $derived(data.byIdx.get(idx))
 
   // The underlined name opens details; clicking anywhere else removes one copy.

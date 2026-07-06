@@ -10,6 +10,8 @@ const EXTRA_TYPES = new Set(['Fusion', 'Synchro'])
 const CAP = { Forbidden: 0, Limited: 1, 'Semi-Limited': 2 }
 const SECTION_CAP = { main: 60, extra: 15, side: 15 }
 const SECTIONS = ['main', 'extra', 'side']
+const DECK_API = '/api/decks'
+let _saveTimer
 
 export const isExtra = (card) => (card?.types || []).some((t) => EXTRA_TYPES.has(t))
 
@@ -20,25 +22,37 @@ function blankDeck(name = 'New Deck') {
 }
 
 function persist() {
+  const payload = JSON.stringify({ v: SCHEMA_VERSION, decks: deck.list, activeId: deck.activeId })
   try {
-    localStorage.setItem(STORE_KEY, JSON.stringify({ v: SCHEMA_VERSION, decks: deck.list, activeId: deck.activeId }))
+    localStorage.setItem(STORE_KEY, payload)
   } catch {
-    // localStorage unavailable or full: the deck stays in memory for this session.
+    // localStorage unavailable/full: rely on the KV copy.
   }
+  // Debounced best-effort sync to KV (deployed); a no-op offline or in dev.
+  clearTimeout(_saveTimer)
+  _saveTimer = setTimeout(() => fetch(DECK_API, { method: 'PUT', body: payload }).catch(() => {}), 500)
 }
 
-// Seeds one empty deck when nothing valid is stored. Call once at startup.
-export function loadDecks() {
-  let saved = null
-  try {
-    saved = JSON.parse(localStorage.getItem(STORE_KEY) || 'null')
-  } catch {
-    saved = null
-  }
+function hydrate(saved) {
   if (saved?.v === SCHEMA_VERSION && Array.isArray(saved.decks) && saved.decks.length) {
     deck.list = saved.decks
     deck.activeId = saved.decks.some((d) => d.id === saved.activeId) ? saved.activeId : saved.decks[0].id
-  } else {
+    return true
+  }
+  return false
+}
+
+// Hydrates instantly from localStorage, then adopts the KV copy (synced across
+// devices) when reachable, seeding one empty deck if nothing is stored anywhere.
+export async function loadDecks() {
+  try {
+    hydrate(JSON.parse(localStorage.getItem(STORE_KEY) || 'null'))
+  } catch {}
+  try {
+    const res = await fetch(DECK_API)
+    if (res.ok) hydrate(await res.json())
+  } catch {}
+  if (!deck.list.length) {
     const d = blankDeck()
     deck.list = [d]
     deck.activeId = d.id

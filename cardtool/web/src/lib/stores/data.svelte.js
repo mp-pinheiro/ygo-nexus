@@ -55,7 +55,7 @@ export const data = {
 // loaded=false and exposes an error message.
 export async function loadDB() {
   try {
-    const res = await fetch(import.meta.env.BASE_URL + 'cards.json')
+    const res = await fetch((import.meta.env.VITE_DATA_BASE || import.meta.env.BASE_URL) + 'cards.json')
     if (!res.ok) throw new Error(`HTTP ${res.status} loading cards.json`)
     const db = await res.json()
     const cards = db.cards || []

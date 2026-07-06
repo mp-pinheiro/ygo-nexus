@@ -1,0 +1,20 @@
+{
+  "name": "ygo-nexus",
+  "main": "worker/index.js",
+  "compatibility_date": "2026-07-01",
+  // nexus.fairfruit.tv is attached as a Worker Custom Domain out of band (Cloudflare
+  // API/dashboard) and gated by Cloudflare Access. It is intentionally NOT declared
+  // here: the CI build token has no DNS edit, and `custom_domain: true` re-asserting an
+  // existing hostname trips wrangler's "externally managed DNS record" error. The domain
+  // persists across deploys as an account-level resource.
+  // Worker runs first for every request so it can route /api and /data before
+  // static-asset handling; everything else falls through to the built SPA.
+  "assets": {
+    "binding": "ASSETS",
+    "directory": "./dist",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": true
+  },
+  "kv_namespaces": [{ "binding": "DECKS", "id": "0b27be882a284f60a4e5bcb2ad9cc814" }],
+  "r2_buckets": [{ "binding": "DATA", "bucket_name": "ygo-nexus-data" }]
+}

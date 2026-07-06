@@ -6,7 +6,7 @@
 
   let { card } = $props()
 
-  const base = import.meta.env.BASE_URL
+  const base = import.meta.env.VITE_DATA_BASE || import.meta.env.BASE_URL
 
   // Name/thumbnail -> details; else add to Main/Extra (Shift-click adds to Side).
   function rowClick(e) {

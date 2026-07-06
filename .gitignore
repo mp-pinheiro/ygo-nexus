@@ -23,6 +23,7 @@ cardtool/web/public/packs/
 # --- Web app (Vite + Svelte) build artifacts ---
 cardtool/web/node_modules/
 cardtool/web/dist/
+cardtool/web/.wrangler/
 
 # --- Editor / WSL shell dotfiles ---
 .bash_profile
