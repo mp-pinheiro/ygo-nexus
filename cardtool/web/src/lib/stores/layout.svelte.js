@@ -2,6 +2,8 @@
 // (right). Panels collapse to a thin rail rather than unmounting, so the expand
 // affordance stays where the panel was. Persisted to localStorage so the layout
 // preference survives reloads.
+import { navPush, navPop } from './nav.svelte.js'
+
 const KEY = 'nexus.layout'
 
 function load() {
@@ -42,16 +44,22 @@ export function toggleDeck() {
 
 // The two drawers overlay the same viewport, so opening one closes the other.
 export function openMobileFilters() {
+  const wasOpen = layout.mFilters || layout.mDeck
   layout.mFilters = true
   layout.mDeck = false
+  if (!wasOpen) navPush('drawer')
 }
 
 export function openMobileDeck() {
+  const wasOpen = layout.mFilters || layout.mDeck
   layout.mDeck = true
   layout.mFilters = false
+  if (!wasOpen) navPush('drawer')
 }
 
 export function closeMobilePanels() {
+  const wasOpen = layout.mFilters || layout.mDeck
   layout.mFilters = false
   layout.mDeck = false
+  if (wasOpen) navPop()
 }

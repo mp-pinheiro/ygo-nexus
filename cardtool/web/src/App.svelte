@@ -2,13 +2,36 @@
   import { onMount } from 'svelte'
   import { fade, fly } from 'svelte/transition'
   import { data, loadDB } from './lib/stores/data.svelte.js'
-  import { nav } from './lib/stores/nav.svelte.js'
+  import { nav, initPopState } from './lib/stores/nav.svelte.js'
   import { media } from './lib/stores/media.svelte.js'
   import { layout, openMobileFilters, openMobileDeck, closeMobilePanels } from './lib/stores/layout.svelte.js'
   import { filters } from './lib/stores/filters.svelte.js'
   import { counts } from './lib/stores/deck.svelte.js'
-  import { escape } from './lib/stores/ui.svelte.js'
+  import { escape, ui, closeDetail } from './lib/stores/ui.svelte.js'
   import { clickSelf } from './lib/a11y.js'
+
+  let touchStartX = 0
+  let touchStartY = 0
+  let touchStartTime = 0
+
+  function onTouchStart(e) {
+    touchStartX = e.touches[0].clientX
+    touchStartY = e.touches[0].clientY
+    touchStartTime = Date.now()
+  }
+
+  function onTouchEnd(e) {
+    if (!media.mobile || nav.view !== 'browse') return
+    if (layout.mFilters || layout.mDeck) return
+    if (ui.detailIdx != null) return
+    const dx = e.changedTouches[0].clientX - touchStartX
+    const dy = e.changedTouches[0].clientY - touchStartY
+    const dt = Date.now() - touchStartTime
+    if (dt > 400 || Math.abs(dy) > Math.abs(dx) * 0.7) return
+    const minSwipe = 60
+    if (dx > minSwipe) openMobileFilters()
+    else if (dx < -minSwipe) openMobileDeck()
+  }
   import SearchBar from './components/SearchBar.svelte'
   import Filters from './components/Filters.svelte'
   import CardTable from './components/CardTable.svelte'
@@ -25,6 +48,10 @@
   onMount(() => {
     loadDB()
     loadDecks()
+    initPopState((tag) => {
+      if (tag === 'detail') { ui.detailIdx = null; ui.packpop = null }
+      else if (tag === 'drawer') { layout.mFilters = false; layout.mDeck = false }
+    })
   })
 
   // Crossing to desktop unmounts the drawer DOM but not its flags; clear them
@@ -54,6 +81,8 @@
   onkeydown={(e) => {
     if (e.key === 'Escape') escape()
   }}
+  ontouchstart={onTouchStart}
+  ontouchend={onTouchEnd}
 />
 
 {#if !data.loaded}
