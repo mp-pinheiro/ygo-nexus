@@ -51,7 +51,7 @@
       {#if owned.loaded}
         <label class="toggle">
           <input type="checkbox" bind:checked={filters.ownedOnly} /> Owned only
-          <span class="owned-count">{owned.count}</span>
+          <span class="owned-count">{owned.total}</span>
         </label>
         <button class="save-action remove" onclick={removeSave}>Remove save</button>
       {:else}
