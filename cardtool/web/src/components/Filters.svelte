@@ -1,17 +1,29 @@
 <script>
-  // Sidebar composing the facet chip groups, numeric ranges, the disabled
-  // "Owned only" stub, and the Reset button (monolith buildFilters/reset). The
-  // facet lists (races/kinds/icons) come from the loaded data store.
+  // Sidebar composing the facet chip groups, numeric ranges, the owned-only
+  // toggle, and the Reset button (monolith buildFilters/reset). The facet lists
+  // (races/kinds/icons) come from the loaded data store.
   import { ATTRS } from '../lib/cards.js'
   import { data } from '../lib/stores/data.svelte.js'
   import { filters, reset } from '../lib/stores/filters.svelte.js'
+  import { owned, importSave, clearSave } from '../lib/stores/owned.svelte.js'
   import { layout, toggleFilters, closeMobilePanels } from '../lib/stores/layout.svelte.js'
   import ChipGroup from './ChipGroup.svelte'
   import RangeGroup from './RangeGroup.svelte'
 
-  // sheet: rendered inside the mobile drawer, where the desktop collapse-to-rail
-  // affordance makes no sense — the header button closes the drawer instead.
   let { sheet = false } = $props()
+
+  let fileInput = $state()
+
+  function onFile(e) {
+    const file = e.target.files?.[0]
+    if (file) importSave(file)
+    if (fileInput) fileInput.value = ''
+  }
+
+  function removeSave() {
+    clearSave()
+    filters.ownedOnly = false
+  }
 </script>
 
 <aside class:collapsed={!sheet && !layout.filters}>
@@ -36,9 +48,19 @@
 
     <div class="fg">
       <h3>Collection</h3>
-      <label class="toggle disabled" title="Import a save file to enable (coming soon)">
-        <input type="checkbox" disabled /> Owned only
-      </label>
+      {#if owned.loaded}
+        <label class="toggle">
+          <input type="checkbox" bind:checked={filters.ownedOnly} /> Owned only
+          <span class="owned-count">{owned.total}</span>
+        </label>
+        <button class="save-action remove" onclick={removeSave}>Remove save</button>
+      {:else}
+        <button class="save-action" onclick={() => fileInput?.click()}>Import save file</button>
+        <input bind:this={fileInput} type="file" accept=".sav" hidden onchange={onFile} />
+      {/if}
+      {#if owned.error}
+        <p class="save-err">{owned.error}</p>
+      {/if}
     </div>
 
     <button class="reset" onclick={reset}>Reset filters</button>
@@ -63,5 +85,11 @@
     color:var(--txt); padding:8px; border-radius:8px; cursor:pointer; }
   button.reset:hover { border-color:var(--accent); color:var(--accent); }
   label.toggle { display:flex; align-items:center; gap:8px; color:var(--dim); cursor:pointer; }
-  label.toggle.disabled { opacity:.5; cursor:not-allowed; }
+  .owned-count { margin-left:auto; font-size:11px; color:var(--accent); font-variant-numeric:tabular-nums; }
+  .save-action { background:var(--panel2); border:1px solid var(--line); color:var(--txt);
+    padding:6px 10px; border-radius:8px; cursor:pointer; font-size:12px; width:100%; margin-top:6px; }
+  .save-action:hover { border-color:var(--accent); color:var(--accent); }
+  .save-action.remove { color:var(--dim); }
+  .save-action.remove:hover { border-color:#e23b3b; color:#e23b3b; }
+  .save-err { margin:6px 0 0; font-size:11px; color:#e88bb8; }
 </style>
