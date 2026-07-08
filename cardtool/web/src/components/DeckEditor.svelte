@@ -1,5 +1,5 @@
 <script>
-  import { active, counts, validity, grouped } from '../lib/stores/deck.svelte.js'
+  import { active, counts, validity, grouped, stats } from '../lib/stores/deck.svelte.js'
   import DeckMenu from './DeckMenu.svelte'
   import DeckEntry from './DeckEntry.svelte'
   import { previewOn } from '../lib/stores/preview.svelte.js'
@@ -22,6 +22,13 @@
         <span class="stat" class:bad={isBad(s, counts[s.key])}>{s.label} {counts[s.key]}/{limitText(s)}</span>
       {/each}
       <span class="validity" class:ok={validity.ok}><span class="dot"></span>{validity.ok ? 'Valid' : 'Invalid'}</span>
+    </div>
+    <div class="counters">
+      <span class="ctr monster">Monsters {stats.monsters}</span>
+      <span class="ctr lo">Lv 1–4 <b>{stats.lo}</b></span>
+      <span class="ctr hi">Lv 5+ <b>{stats.hi}</b></span>
+      <span class="ctr spell">Spells {stats.spells}</span>
+      <span class="ctr trap">Traps {stats.traps}</span>
     </div>
   </header>
 
@@ -115,6 +122,26 @@
     border-radius: 50%;
     background: currentColor;
   }
+  .counters {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    width: 100%;
+  }
+  .ctr {
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 6px;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+  .ctr b { font-weight: 700; }
+  .ctr.monster { background: rgba(200,147,59,.14); color: var(--mon); }
+  .ctr.lo { background: rgba(200,147,59,.08); color: var(--mon); opacity: .8; }
+  .ctr.hi { background: rgba(200,147,59,.08); color: var(--mon); opacity: .8; }
+  .ctr.spell { background: rgba(29,154,138,.14); color: var(--spell); }
+  .ctr.trap { background: rgba(181,66,127,.14); color: var(--trap); }
   .cols {
     flex: 1 1 auto;
     min-height: 0;
