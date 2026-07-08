@@ -3,6 +3,7 @@
   import { add, sectionOf } from '../lib/stores/deck.svelte.js'
   import { showToast } from '../lib/stores/toast.svelte.js'
   import { media } from '../lib/stores/media.svelte.js'
+  import { owned } from '../lib/stores/owned.svelte.js'
   import LimitBadge from './LimitBadge.svelte'
 
   let { card } = $props()
@@ -33,7 +34,10 @@
 </script>
 
 <tr data-i={card.idx} onclick={rowClick} title="Click to add · Shift-click for Side">
-  <td class="thumb" data-details><img class="pix" src={base + card.art} loading="lazy" alt="" /></td>
+  <td class="thumb" data-details>
+    <img class="pix" src={base + card.art} loading="lazy" alt="" />
+    {#if owned.loaded}<span class="own-ct">{owned.copies(card.idx)}</span>{/if}
+  </td>
   <td class="name">
     <span class="nm" data-details>{card.name}</span>
     <div class="msub">
@@ -61,9 +65,12 @@
   td.name { font-weight:600; }
   td.num { text-align:right; font-variant-numeric:tabular-nums; color:var(--dim); }
   td.lim { width:1px; text-align:center; }
-  td.thumb { padding:4px 4px 4px 12px; width:1px; }
+  td.thumb { padding:4px 4px 4px 12px; width:1px; position:relative; }
   td.thumb img { width:34px; height:34px; object-fit:cover; image-rendering:pixelated;
     border-radius:4px; background:var(--panel2); display:block; }
+  .own-ct { position:absolute; bottom:2px; right:2px; background:var(--accent2); color:#fff;
+    font-size:9px; font-weight:700; min-width:14px; height:14px; line-height:14px;
+    text-align:center; border-radius:7px; padding:0 3px; font-variant-numeric:tabular-nums; }
   .nm { text-decoration:underline; text-decoration-color:var(--line); }
   .nm:hover { text-decoration-color:var(--accent2); color:var(--accent2); }
   .eff { max-width:520px; white-space:pre-wrap; color:var(--dim); font-size:12.5px; }

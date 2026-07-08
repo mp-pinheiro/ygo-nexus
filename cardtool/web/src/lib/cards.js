@@ -184,7 +184,7 @@ function matchQuery(groups, card, searchIn) {
 // (per-field enable map). The text query is precompiled once by the caller and
 // passed as `compiled`; falls back to parsing filters.q if omitted.
 export function match(card, filters, searchIn, compiled, ownedSet) {
-  if (filters.ownedOnly && ownedSet && !ownedSet.has(card.idx)) return false
+  if (ownedSet && !ownedSet.has(card.idx)) return false
   const groups = (compiled || parseQuery(filters.q)).groups
   if (!matchQuery(groups, card, searchIn)) return false
   if (filters.types.size && !filters.types.has(card.cardType)) return false

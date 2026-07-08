@@ -22,7 +22,6 @@
 
   function removeSave() {
     clearSave()
-    filters.ownedOnly = false
   }
 </script>
 
@@ -49,11 +48,8 @@
     <div class="fg">
       <h3>Collection</h3>
       {#if owned.loaded}
-        <label class="toggle">
-          <input type="checkbox" bind:checked={filters.ownedOnly} /> Owned only
-          <span class="owned-count">{owned.total}</span>
-        </label>
-        <button class="save-action remove" onclick={removeSave}>Remove save</button>
+        <p class="save-info">Save loaded <span class="owned-count">{owned.total} copies</span></p>
+        <button class="save-action remove" onclick={removeSave}>Show all (remove save)</button>
       {:else}
         <button class="save-action" onclick={() => fileInput?.click()}>Import save file</button>
         <input bind:this={fileInput} type="file" accept=".sav" hidden onchange={onFile} />
@@ -84,7 +80,7 @@
   button.reset { width:100%; background:var(--panel2); border:1px solid var(--line);
     color:var(--txt); padding:8px; border-radius:8px; cursor:pointer; }
   button.reset:hover { border-color:var(--accent); color:var(--accent); }
-  label.toggle { display:flex; align-items:center; gap:8px; color:var(--dim); cursor:pointer; }
+  .save-info { margin:0 0 4px; font-size:12px; color:var(--dim); display:flex; align-items:center; gap:6px; }
   .owned-count { margin-left:auto; font-size:11px; color:var(--accent); font-variant-numeric:tabular-nums; }
   .save-action { background:var(--panel2); border:1px solid var(--line); color:var(--txt);
     padding:6px 10px; border-radius:8px; cursor:pointer; font-size:12px; width:100%; margin-top:6px; }
