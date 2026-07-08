@@ -45,8 +45,7 @@
       filters.icons.size +
       (filters.lvMin !== '' || filters.lvMax !== '' ? 1 : 0) +
       (filters.atkMin !== '' || filters.atkMax !== '' ? 1 : 0) +
-      (filters.defMin !== '' || filters.defMax !== '' ? 1 : 0) +
-      (filters.ownedOnly ? 1 : 0),
+      (filters.defMin !== '' || filters.defMax !== '' ? 1 : 0),
   )
 </script>
 

@@ -19,7 +19,6 @@ export const filters = $state({
   atkMax: '',
   defMin: '',
   defMax: '',
-  ownedOnly: false,
 })
 
 // Per-field search-in enable map; Name and Effect default on.
@@ -39,7 +38,6 @@ export function reset() {
   filters.atkMax = ''
   filters.defMin = ''
   filters.defMax = ''
-  filters.ownedOnly = false
 }
 
 export function toggleSet(set, v) {

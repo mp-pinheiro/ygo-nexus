@@ -2,6 +2,7 @@
   import { data } from '../lib/stores/data.svelte.js'
   import { removeOne } from '../lib/stores/deck.svelte.js'
   import { rowAction } from '../lib/stores/ui.svelte.js'
+  import { owned } from '../lib/stores/owned.svelte.js'
 
   // rich: Deck-tab variant mirroring the Browse rows (type badge, meta line,
   // effect text); detail: compact variant for the narrow side panel showing
@@ -22,6 +23,8 @@
     }
   }
 
+  const invalid = $derived(owned.loaded && count > owned.copies(idx))
+
   const metaLine = $derived(
     card && card.cardType === 'Monster'
       ? [card.attribute, card.race, card.kind].filter(Boolean).join(' · ')
@@ -30,11 +33,11 @@
 </script>
 
 {#if card}
-  <div class="de" class:rich class:detail role="button" tabindex="0" title="Remove one" data-i={idx} onclick={click} onkeydown={keydown}>
+  <div class="de" class:rich class:detail class:invalid role="button" tabindex="0" title="Remove one" data-i={idx} onclick={click} onkeydown={keydown}>
     <img class="pix thumb" data-details src={base + card.art} alt="" />
     {#if rich}
       <div class="body">
-        <span class="rnm"><span class="nmt" data-details>{card.name}</span>{#if count > 1}<span class="ct">×{count}</span>{/if}</span>
+        <span class="rnm"><span class="nmt" data-details>{card.name}</span>{#if count > 1}<span class="ct">×{count}</span>{/if}{#if owned.loaded}<span class="own" class:bad={invalid}>own {owned.copies(idx)}</span>{/if}</span>
         <div class="meta">
           <span class="badge t-{card.cardType}">{card.cardType}</span>
           {#if metaLine}<span>{metaLine}</span>{/if}
@@ -44,7 +47,7 @@
       </div>
     {:else if detail}
       <div class="dbody">
-        <span class="nm"><span class="nmt" data-details>{card.name}</span>{#if count > 1}<span class="ct">×{count}</span>{/if}</span>
+        <span class="nm"><span class="nmt" data-details>{card.name}</span>{#if count > 1}<span class="ct">×{count}</span>{/if}{#if owned.loaded}<span class="own" class:bad={invalid}>own {owned.copies(idx)}</span>{/if}</span>
         <div class="dmeta">
           <span class="badge t-{card.cardType}">{card.cardType}</span>
           {#if card.cardType === 'Monster'}
@@ -58,6 +61,7 @@
     {:else}
       <span class="nm"><span class="nmt" data-details>{card.name}</span></span>
       {#if count > 1}<span class="ct">×{count}</span>{/if}
+      {#if owned.loaded}<span class="own" class:bad={invalid}>own {owned.copies(idx)}</span>{/if}
     {/if}
   </div>
 {/if}
@@ -102,6 +106,22 @@
     color: var(--dim);
     font-size: 12px;
     font-variant-numeric: tabular-nums;
+  }
+  .de.invalid {
+    background: rgba(226, 59, 59, 0.08);
+  }
+  .de.invalid:hover {
+    background: rgba(226, 59, 59, 0.14);
+  }
+  .own {
+    font-size: 10px;
+    color: var(--dim);
+    margin-left: auto;
+    font-variant-numeric: tabular-nums;
+  }
+  .own.bad {
+    color: #e23b3b;
+    font-weight: 600;
   }
 
   /* Detail mode: compact card info for the narrow side panel */
