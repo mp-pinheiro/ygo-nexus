@@ -95,6 +95,27 @@ export const validity = {
   },
 }
 
+let _stats = $derived.by(() => {
+  const d = _active
+  if (!d) return { monsters: 0, lo: 0, hi: 0, spells: 0, traps: 0 }
+  let monsters = 0, lo = 0, hi = 0, spells = 0, traps = 0
+  for (const idx of d.main) {
+    const c = data.byIdx.get(idx)
+    if (!c) continue
+    if (c.cardType === 'Monster') { monsters++; (c.level ?? 0) >= 5 ? hi++ : lo++ }
+    else if (c.cardType === 'Spell') spells++
+    else if (c.cardType === 'Trap') traps++
+  }
+  return { monsters, lo, hi, spells, traps }
+})
+export const stats = {
+  get monsters() { return _stats.monsters },
+  get lo() { return _stats.lo },
+  get hi() { return _stats.hi },
+  get spells() { return _stats.spells },
+  get traps() { return _stats.traps },
+}
+
 // Card name -> most-restrictive banlist tier, so same-name alt-arts share a copy
 // cap. Derived from the card DB, so it fills in once loadDB() resolves.
 let _nameLimit = $derived.by(() => {
