@@ -43,7 +43,12 @@
     <div class="msub">
       <span class="badge t-{card.cardType}">{card.cardType}</span>
       {#if msLine}<span>{msLine}</span>{/if}
-      {#if card.cardType === 'Monster'}<span>Lv {card.level ?? '—'} · {card.atk ?? '—'} / {card.def ?? '—'}</span>{/if}
+      {#if card.cardType === 'Monster'}
+        <span class="mlvl">
+          {#if card.level != null}<span class="mstars" title="Level {card.level}">{'★'.repeat(Math.min(card.level, 12))}</span>{/if}
+          {card.atk ?? '—'} / {card.def ?? '—'}
+        </span>
+      {/if}
     </div>
     {#if card.effect}<div class="meff">{card.effect}</div>{/if}
   </td>
@@ -75,6 +80,8 @@
   .nm:hover { text-decoration-color:var(--accent2); color:var(--accent2); }
   .eff { max-width:520px; white-space:pre-wrap; color:var(--dim); font-size:12.5px; }
 
+  .mstars { color:#f4cf76; letter-spacing:0.5px; font-size:10px; text-shadow:0 1px 1px rgba(0,0,0,.4); }
+  .mlvl { display:inline-flex; align-items:center; gap:4px; }
   .msub, .meff { display:none; }
   @media (orientation:portrait) {
     td.c-type, td.c-attr, td.c-race, td.c-kind, td.c-lv, td.c-atk, td.c-def, td.c-eff { display:none; }

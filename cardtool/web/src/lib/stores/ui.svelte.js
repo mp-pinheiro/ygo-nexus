@@ -4,6 +4,7 @@
 import { imgFull } from '../cards.js'
 import { filters } from './filters.svelte.js'
 import { layout } from './layout.svelte.js'
+import { navPush, navPop } from './nav.svelte.js'
 
 export const ui = $state({ detailIdx: null, artTab: 'card', zoom: null, packpop: null })
 
@@ -11,6 +12,7 @@ export function showDetail(card) {
   ui.packpop = null
   ui.detailIdx = card.idx
   ui.artTab = imgFull(card) ? 'card' : 'art'
+  navPush('detail')
 }
 
 // Keep this dispatch in ONE place: CardRow and DeckEntry once implemented it
@@ -24,6 +26,7 @@ export function rowAction(e, card, action) {
 export function closeDetail() {
   ui.detailIdx = null
   ui.packpop = null
+  navPop()
 }
 
 export function openZoom(url, pix) {
@@ -55,10 +58,11 @@ export function schedulePackClose() {
 export function escape() {
   if (ui.packpop) ui.packpop = null
   else if (ui.zoom) ui.zoom = null
-  else if (ui.detailIdx != null) ui.detailIdx = null
+  else if (ui.detailIdx != null) closeDetail()
   else if (layout.mFilters || layout.mDeck) {
     layout.mFilters = false
     layout.mDeck = false
+    navPop()
   } else {
     filters.q = ''
     document.getElementById('q')?.focus()

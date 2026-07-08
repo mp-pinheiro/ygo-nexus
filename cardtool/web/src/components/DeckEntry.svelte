@@ -3,6 +3,7 @@
   import { removeOne } from '../lib/stores/deck.svelte.js'
   import { rowAction } from '../lib/stores/ui.svelte.js'
   import { owned } from '../lib/stores/owned.svelte.js'
+  import LimitBadge from './LimitBadge.svelte'
 
   // rich: Deck-tab variant mirroring the Browse rows (type badge, meta line,
   // effect text); detail: compact variant for the narrow side panel showing
@@ -37,11 +38,16 @@
     <img class="pix thumb" data-details src={base + card.art} alt="" />
     {#if rich}
       <div class="body">
-        <span class="rnm"><span class="nmt" data-details>{card.name}</span>{#if count > 1}<span class="ct">×{count}</span>{/if}{#if owned.loaded}<span class="own" class:bad={invalid}>own {owned.copies(idx)}</span>{/if}</span>
+        <span class="rnm"><span class="nmt" data-details>{card.name}</span>{#if card.limit}<LimitBadge limit={card.limit} size={16} />{/if}{#if count > 1}<span class="ct">×{count}</span>{/if}{#if owned.loaded}<span class="own" class:bad={invalid}>own {owned.copies(idx)}</span>{/if}</span>
         <div class="meta">
           <span class="badge t-{card.cardType}">{card.cardType}</span>
           {#if metaLine}<span>{metaLine}</span>{/if}
-          {#if card.cardType === 'Monster'}<span>Lv {card.level ?? '—'} · {card.atk ?? '—'} / {card.def ?? '—'}</span>{/if}
+          {#if card.cardType === 'Monster'}
+            <span class="rstars">
+              {#if card.level != null}<span class="mstars" title="Level {card.level}">{'★'.repeat(Math.min(card.level, 12))}</span>{/if}
+              {card.atk ?? '—'} / {card.def ?? '—'}
+            </span>
+          {/if}
         </div>
         {#if card.effect}<div class="eff">{card.effect}</div>{/if}
       </div>
@@ -50,7 +56,10 @@
         <span class="nm"><span class="nmt" data-details>{card.name}</span>{#if count > 1}<span class="ct">×{count}</span>{/if}{#if owned.loaded}<span class="own" class:bad={invalid}>own {owned.copies(idx)}</span>{/if}</span>
         <div class="dmeta">
           <span class="badge t-{card.cardType}">{card.cardType}</span>
+          {#if card.limit}<LimitBadge limit={card.limit} size={14} />{/if}
           {#if card.cardType === 'Monster'}
+            {#if card.level != null}<span class="dstars" title="Lv {card.level}">{'★'.repeat(Math.min(card.level, 12))}</span>{/if}
+            <span>{card.race || ''}</span>
             <span>{card.atk ?? '?'} / {card.def ?? '?'}</span>
           {:else if card.icon}
             <span>{card.icon}</span>
@@ -151,6 +160,7 @@
     color: var(--dim);
   }
   .dmeta .badge { font-size: 10px; padding: 0 5px; }
+  .dstars { color:#f4cf76; font-size:9px; letter-spacing:0.5px; text-shadow:0 1px 1px rgba(0,0,0,.4); }
   .deff {
     margin-top: 2px;
     font-size: 11px;
@@ -193,6 +203,8 @@
     font-size: 11.5px;
     color: var(--dim);
   }
+  .mstars { color:#f4cf76; letter-spacing:0.5px; font-size:10px; text-shadow:0 1px 1px rgba(0,0,0,.4); }
+  .rstars { display:inline-flex; align-items:center; gap:3px; }
   .eff {
     margin-top: 4px;
     white-space: pre-wrap;
