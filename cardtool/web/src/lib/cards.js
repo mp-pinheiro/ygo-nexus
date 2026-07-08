@@ -183,7 +183,8 @@ function matchQuery(groups, card, searchIn) {
 // Filter predicate. Reads filters (SvelteSets + range strings) and searchIn
 // (per-field enable map). The text query is precompiled once by the caller and
 // passed as `compiled`; falls back to parsing filters.q if omitted.
-export function match(card, filters, searchIn, compiled) {
+export function match(card, filters, searchIn, compiled, ownedSet) {
+  if (filters.ownedOnly && ownedSet && !ownedSet.has(card.idx)) return false
   const groups = (compiled || parseQuery(filters.q)).groups
   if (!matchQuery(groups, card, searchIn)) return false
   if (filters.types.size && !filters.types.has(card.cardType)) return false

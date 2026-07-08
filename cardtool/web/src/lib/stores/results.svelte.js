@@ -2,11 +2,13 @@
 // The 500-row CAP is applied in CardTable, not here.
 import { data } from './data.svelte.js'
 import { filters, searchIn } from './filters.svelte.js'
+import { owned } from './owned.svelte.js'
 import { match, parseQuery, sortKey } from '../cards.js'
 
 let _list = $derived.by(() => {
   const compiled = parseQuery(filters.q)
-  const list = data.cards.filter((c) => match(c, filters, searchIn, compiled))
+  const ownedSet = owned.set
+  const list = data.cards.filter((c) => match(c, filters, searchIn, compiled, ownedSet))
   list.sort((a, b) => {
     const x = sortKey(a, filters.sort)
     const y = sortKey(b, filters.sort)
