@@ -8,8 +8,8 @@
   let { title, values, set } = $props()
 </script>
 
-<div class="fg" class:inline={!title}>
-  {#if title}<h3>{title}</h3>{/if}
+<div class="fg">
+  <h3>{title}</h3>
   <div class="chips">
     {#each values as v (v)}
       <span class="chip" class:on={set.has(v)} role="button" tabindex="0" aria-pressed={set.has(v)}
@@ -21,7 +21,6 @@
 <style>
   /* Structural sidebar CSS (monolith .fg/.chips); .chip* stay global in app.css. */
   .fg { margin-bottom:16px; }
-  .fg.inline { margin-bottom:0; }
   .fg h3 { margin:0 0 7px; font-size:11px; letter-spacing:.08em; text-transform:uppercase;
     color:var(--dim); font-weight:600; }
   .chips { display:flex; flex-wrap:wrap; gap:5px; }
