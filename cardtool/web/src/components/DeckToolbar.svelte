@@ -119,21 +119,22 @@
     .dt {
       position: sticky;
       top: 0;
-      z-index: 2;
-      padding: 8px 10px;
-      gap: 6px;
+      z-index: 3;
+      padding: 6px 10px;
+      gap: 5px;
       overflow-x: auto;
       scrollbar-width: none;
+      border-bottom: none;
     }
     .dt::-webkit-scrollbar {
       display: none;
     }
     .dq {
-      width: 100px;
+      width: 90px;
       flex: 0 0 auto;
       font-size: 14px;
-      padding: 6px 10px;
-      border-radius: 12px;
+      padding: 5px 9px;
+      border-radius: 10px;
     }
     .sep {
       display: none;
@@ -142,8 +143,8 @@
       background: var(--panel2);
       border: 1px solid var(--line);
       color: var(--dim);
-      padding: 6px 11px;
-      border-radius: 12px;
+      padding: 5px 10px;
+      border-radius: 10px;
       font-size: 12px;
     }
     .sbtn.active {
