@@ -6,7 +6,7 @@ only rewrites card_pack.bin. We read everything from the hack's bin2.pac so pack
 membership reflects Nexus Revival. card_prop.bin layout (two LE uint32 per card),
 reverse-engineered and validated against ProjectIgnis/BabelCDB by password:
 
-  Prop1: id=[0:14]  atk=[14:23]*10  def=[23:32]*10     (511 = variable "?", stored as 0)
+  Prop1: id=[0:14]  atk=[14:23]*10  def=[23:32]*10     (511 = variable "?")
   Prop2: kind=[0:6] attr=[6:10] level=[10:14] icon=[14:17] race=[17:22]
 """
 import json
@@ -157,8 +157,8 @@ def extract(bin2_path=BIN2):
             'attribute': ATTR.get((p2 >> 6) & 0xF) if ctype == 'Monster' else None,
             'race': RACE.get((p2 >> 17) & 0x1F) if ctype == 'Monster' else None,
             'level': (p2 >> 10) & 0xF if ctype == 'Monster' else None,
-            'atk': (0 if atk_r == 0x1FF else atk_r * 10) if ctype == 'Monster' else None,
-            'def': (0 if def_r == 0x1FF else def_r * 10) if ctype == 'Monster' else None,
+            'atk': ('?' if atk_r == 0x1FF else atk_r * 10) if ctype == 'Monster' else None,
+            'def': ('?' if def_r == 0x1FF else def_r * 10) if ctype == 'Monster' else None,
             'icon': ICON.get((p2 >> 14) & 0x7) if ctype != 'Monster' else None,
             'pack': packs[pack_id]['code'] if pack_id in packs else None,
             'rarity': RARITY.get(rarity) if pack_id else None,

@@ -199,9 +199,10 @@ export function match(card, filters, searchIn, compiled, ownedSet) {
   return true
 }
 
-// Sort key: null/undefined sorts as -1 for numeric columns, '' otherwise.
+// Sort key: null/undefined and variable "?" stats sort as -1 for numeric columns, '' otherwise.
 export const sortKey = (c, k) => {
   if (k === 'limit') return LIMIT_RANK[c.limit] ?? 3
   const v = c[k]
-  return v == null ? (COLS.find((x) => x.k === k)?.num ? -1 : '') : v
+  if (COLS.find((x) => x.k === k)?.num) return typeof v === 'number' ? v : -1
+  return v ?? ''
 }
