@@ -159,7 +159,7 @@ function testAtom(atom, card, getHay) {
 
 // True if any OR-group fully matches: every positive term present, no negated
 // term present. No groups (empty query) matches everything.
-function matchQuery(groups, card, searchIn) {
+export function matchQuery(groups, card, searchIn) {
   if (!groups.length) return true
   let hay = null
   const getHay = () => {
