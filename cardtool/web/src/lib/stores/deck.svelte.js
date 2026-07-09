@@ -207,16 +207,55 @@ export function setActive(id) {
 }
 
 const TYPE_ORDER = { Monster: 0, Spell: 1, Trap: 2 }
-export function grouped(section) {
+
+function buildRows(section) {
   const m = new Map()
   for (const idx of active[section]) m.set(idx, (m.get(idx) ?? 0) + 1)
   return [...m]
     .map(([idx, count]) => ({ idx, count, card: data.byIdx.get(idx) }))
     .filter((r) => r.card)
-    .sort((a, b) => {
-      const t = TYPE_ORDER[a.card.cardType] - TYPE_ORDER[b.card.cardType]
-      if (t) return t
-      if (a.card.cardType === 'Monster' && (b.card.level ?? 0) !== (a.card.level ?? 0)) return (b.card.level ?? 0) - (a.card.level ?? 0)
-      return a.card.name.localeCompare(b.card.name)
+}
+
+function typeSort(a, b, dir) {
+  const t = (TYPE_ORDER[a.card.cardType] - TYPE_ORDER[b.card.cardType]) * dir
+  if (t) return t
+  if (a.card.cardType === 'Monster' && (b.card.level ?? 0) !== (a.card.level ?? 0))
+    return ((b.card.level ?? 0) - (a.card.level ?? 0)) * dir
+  return a.card.name.localeCompare(b.card.name) * dir
+}
+
+export function grouped(section) {
+  return buildRows(section).sort((a, b) => typeSort(a, b, 1))
+}
+
+import { parseQuery, matchQuery, sortKey as cardSortKey } from '../cards.js'
+
+const DECK_SEARCH_IN = { name: true, effect: true, race: true, kind: true, attribute: true }
+
+export function filteredGrouped(section, query, sk, dir, typeFilter) {
+  let rows = buildRows(section)
+
+  if (typeFilter && typeFilter.size > 0) {
+    rows = rows.filter((r) => typeFilter.has(r.card.cardType))
+  }
+
+  const compiled = parseQuery(query)
+  if (compiled.groups.length) {
+    rows = rows.filter((r) => matchQuery(compiled.groups, r.card, DECK_SEARCH_IN))
+  }
+
+  const d = dir || 1
+  if (sk === 'type' || !sk) {
+    rows.sort((a, b) => typeSort(a, b, d))
+  } else if (sk === 'count') {
+    rows.sort((a, b) => (b.count - a.count) * d || a.card.name.localeCompare(b.card.name))
+  } else {
+    rows.sort((a, b) => {
+      const x = cardSortKey(a.card, sk)
+      const y = cardSortKey(b.card, sk)
+      return (x < y ? -1 : x > y ? 1 : 0) * d
     })
+  }
+
+  return rows
 }

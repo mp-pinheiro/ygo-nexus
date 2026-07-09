@@ -1,7 +1,9 @@
 <script>
-  import { active, counts, validity, grouped, stats } from '../lib/stores/deck.svelte.js'
+  import { active, counts, validity, filteredGrouped, stats } from '../lib/stores/deck.svelte.js'
+  import { deckFilters, hasActiveFilters } from '../lib/stores/deckFilters.svelte.js'
   import DeckMenu from './DeckMenu.svelte'
   import DeckEntry from './DeckEntry.svelte'
+  import DeckToolbar from './DeckToolbar.svelte'
   import { previewOn } from '../lib/stores/preview.svelte.js'
 
   const SECTIONS = [
@@ -32,20 +34,31 @@
     </div>
   </header>
 
+  <DeckToolbar />
+
   {#if active.deck}
     <div class="cols" use:previewOn>
       {#each SECTIONS as s (s.key)}
+        {@const rows = filteredGrouped(s.key, deckFilters.q, deckFilters.sort, deckFilters.dir, deckFilters.types)}
         <div class="col">
           <div class="col-head">
             <span class="col-title">{s.label}</span>
-            <span class="cnt" class:bad={isBad(s, counts[s.key])}>{counts[s.key]} / {limitText(s)}</span>
+            <span class="cnt" class:bad={isBad(s, counts[s.key])}>
+              {#if hasActiveFilters.value}
+                {rows.length} / {counts[s.key]}
+              {:else}
+                {counts[s.key]} / {limitText(s)}
+              {/if}
+            </span>
           </div>
-          {#if counts[s.key]}
+          {#if rows.length}
             <div class="col-list">
-              {#each grouped(s.key) as row (row.idx)}
+              {#each rows as row (row.idx)}
                 <DeckEntry section={s.key} idx={row.idx} count={row.count} rich />
               {/each}
             </div>
+          {:else if counts[s.key]}
+            <p class="empty">No matches.</p>
           {:else}
             <p class="empty">Empty. Click cards in Browse to add.</p>
           {/if}
