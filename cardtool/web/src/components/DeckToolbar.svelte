@@ -11,28 +11,26 @@
     placeholder="Search deck…"
     bind:value={deckFilters.q}
   />
-  <div class="strip">
-    {#each SORT_OPTIONS as opt (opt.k)}
-      <button
-        class="sbtn"
-        class:active={deckFilters.sort === opt.k}
-        onclick={() => toggleDeckSort(opt.k)}
-      >
-        {opt.label}
-        {#if deckFilters.sort === opt.k}
-          <span class="arrow">{deckFilters.dir === 1 ? '▲' : '▼'}</span>
-        {/if}
-      </button>
-    {/each}
-    <span class="sep" aria-hidden="true"></span>
-    {#each ['Monster', 'Spell', 'Trap'] as t (t)}
-      <span class="chip" class:on={deckFilters.types.has(t)} role="button" tabindex="0" aria-pressed={deckFilters.types.has(t)}
-        onclick={() => toggleSet(deckFilters.types, t)} onkeydown={activateKey(() => toggleSet(deckFilters.types, t))}>{t}</span>
-    {/each}
-    {#if hasActiveFilters.value}
-      <button class="clr" onclick={resetDeckFilters}>✕</button>
-    {/if}
-  </div>
+  {#each SORT_OPTIONS as opt (opt.k)}
+    <button
+      class="sbtn"
+      class:active={deckFilters.sort === opt.k}
+      onclick={() => toggleDeckSort(opt.k)}
+    >
+      {opt.label}
+      {#if deckFilters.sort === opt.k}
+        <span class="arrow">{deckFilters.dir === 1 ? '▲' : '▼'}</span>
+      {/if}
+    </button>
+  {/each}
+  <span class="sep" aria-hidden="true"></span>
+  {#each ['Monster', 'Spell', 'Trap'] as t (t)}
+    <span class="chip" class:on={deckFilters.types.has(t)} role="button" tabindex="0" aria-pressed={deckFilters.types.has(t)}
+      onclick={() => toggleSet(deckFilters.types, t)} onkeydown={activateKey(() => toggleSet(deckFilters.types, t))}>{t}</span>
+  {/each}
+  {#if hasActiveFilters.value}
+    <button class="clr" onclick={resetDeckFilters}>✕</button>
+  {/if}
 </div>
 
 <style>
@@ -60,13 +58,6 @@
     outline: none;
     border-color: var(--accent2);
   }
-  .strip {
-    flex: 1;
-    min-width: 0;
-    display: flex;
-    align-items: center;
-    gap: 2px;
-  }
   .sep {
     align-self: stretch;
     width: 1px;
@@ -88,6 +79,7 @@
     display: inline-flex;
     align-items: center;
     gap: 3px;
+    flex: 0 0 auto;
   }
   .sbtn:hover {
     color: var(--txt);
@@ -125,28 +117,42 @@
 
   @media (orientation: portrait) {
     .dt {
-      padding: 6px 10px;
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      padding: 8px 10px;
       gap: 6px;
-    }
-    .dq {
-      width: 0;
-      flex: 1;
-      min-width: 80px;
-      font-size: 16px;
-      padding: 7px 10px;
-    }
-    .strip {
       overflow-x: auto;
       scrollbar-width: none;
-      flex-shrink: 0;
-      flex: 0 0 auto;
     }
-    .strip::-webkit-scrollbar {
+    .dt::-webkit-scrollbar {
+      display: none;
+    }
+    .dq {
+      width: 100px;
+      flex: 0 0 auto;
+      font-size: 14px;
+      padding: 6px 10px;
+      border-radius: 12px;
+    }
+    .sep {
       display: none;
     }
     .sbtn {
+      background: var(--panel2);
+      border: 1px solid var(--line);
+      color: var(--dim);
+      padding: 6px 11px;
+      border-radius: 12px;
       font-size: 12px;
-      padding: 4px 8px;
+    }
+    .sbtn.active {
+      background: var(--accent2);
+      border-color: var(--accent2);
+      color: #fff;
+    }
+    .arrow {
+      font-size: 10px;
     }
   }
 </style>

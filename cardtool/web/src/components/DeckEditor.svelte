@@ -34,10 +34,9 @@
     </div>
   </header>
 
-  <DeckToolbar />
-
   {#if active.deck}
     <div class="cols" use:previewOn>
+      <DeckToolbar />
       {#each SECTIONS as s (s.key)}
         {@const rows = filteredGrouped(s.key, deckFilters.q, deckFilters.sort, deckFilters.dir, deckFilters.types)}
         <div class="col">
@@ -162,6 +161,9 @@
     grid-template-columns: 2fr 1fr 1fr;
     gap: 1px;
     background: var(--line);
+  }
+  .cols > :global(.dt) {
+    grid-column: 1 / -1;
   }
   .col {
     background: var(--bg);
