@@ -1,39 +1,20 @@
 import { parseSaveFile } from '../savefile.js'
-import { data } from './data.svelte.js'
 
 const STORAGE_KEY = 'ygo-nexus-save'
 
-let _trunkCopies = $state.raw(/** @type {Map<number,number>|null} */ (null))
-let _deckGameIds = $state.raw(/** @type {number[]} */ ([]))
+// copies per card idx; save counts already include deck cards
+let _copies = $state.raw(/** @type {Map<number,number>|null} */ (null))
 let _error = $state(/** @type {string|null} */ (null))
 
-// Merges trunk ownership with deck cards once the card DB is loaded (provides
-// the internal-game-id → sequential-idx mapping). Until then, returns trunk
-// only. Recalculates reactively when either source changes.
-let _combined = $derived.by(() => {
-  if (!_trunkCopies) return null
-  if (!_deckGameIds.length || !data.cards.length) return _trunkCopies
-  const idToIdx = new Map()
-  for (const c of data.cards) idToIdx.set(c.id, c.idx)
-  const merged = new Map(_trunkCopies)
-  for (const gameId of _deckGameIds) {
-    const idx = idToIdx.get(gameId)
-    if (idx !== undefined) merged.set(idx, (merged.get(idx) ?? 0) + 1)
-  }
-  return merged
-})
-
 let _total = $derived.by(() => {
-  if (!_combined) return 0
+  if (!_copies) return 0
   let t = 0
-  for (const c of _combined.values()) t += c
+  for (const c of _copies.values()) t += c
   return t
 })
 
 function loadFromBytes(buf) {
-  const result = parseSaveFile(buf)
-  _trunkCopies = result.copies
-  _deckGameIds = result.deckGameIds
+  _copies = parseSaveFile(buf).copies
 }
 
 function restoreCached() {
@@ -50,13 +31,13 @@ function restoreCached() {
 restoreCached()
 
 export const owned = {
-  get loaded() { return _trunkCopies !== null },
+  get loaded() { return _copies !== null },
   get error() { return _error },
-  get count() { return _combined ? _combined.size : 0 },
+  get count() { return _copies ? _copies.size : 0 },
   get total() { return _total },
-  get set() { return _combined },
-  has(idx) { return _combined ? _combined.has(idx) : false },
-  copies(idx) { return _combined ? (_combined.get(idx) ?? 0) : 0 },
+  get set() { return _copies },
+  has(idx) { return _copies ? _copies.has(idx) : false },
+  copies(idx) { return _copies ? (_copies.get(idx) ?? 0) : 0 },
 }
 
 export async function importSave(file) {
@@ -70,14 +51,12 @@ export async function importSave(file) {
     localStorage.setItem(STORAGE_KEY, btoa(b64))
   } catch (err) {
     _error = err instanceof Error ? err.message : String(err)
-    _trunkCopies = null
-    _deckGameIds = []
+    _copies = null
   }
 }
 
 export function clearSave() {
-  _trunkCopies = null
-  _deckGameIds = []
+  _copies = null
   _error = null
   localStorage.removeItem(STORAGE_KEY)
 }
