@@ -2,8 +2,7 @@ import { parseSaveFile } from '../savefile.js'
 
 const STORAGE_KEY = 'ygo-nexus-save'
 
-// Copies owned per card idx, straight from the save's ownership array
-// (already includes cards in decks — no merging needed).
+// copies per card idx; save counts already include deck cards
 let _copies = $state.raw(/** @type {Map<number,number>|null} */ (null))
 let _error = $state(/** @type {string|null} */ (null))
 

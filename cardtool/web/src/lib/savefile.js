@@ -1,10 +1,7 @@
 const MAGIC = 'wcs2011'
 
-// Card ownership: 4-bit packed array in bank 1, one nibble per sequential
-// card index (low nibble = even index). Value = total copies owned across
-// trunk + decks + side, capped at 9 by the game. Entry 0 is the dummy row
-// before card idx 1. A mirror of the array lives in bank 2 at 0xC13E.
-// Verified against in-game trunk counts (see testdata/fruta.sav).
+// Ownership: nibble per card idx (low = even), total copies incl. decks,
+// capped at 9. Mirrored in bank 2 at 0xC13E.
 const TRUNK_OFFSET = 0x8E06
 const TRUNK_ENTRIES = 4306
 const TRUNK_END = TRUNK_OFFSET + Math.ceil(TRUNK_ENTRIES / 2)
