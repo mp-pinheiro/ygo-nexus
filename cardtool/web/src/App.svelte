@@ -188,6 +188,16 @@
     border-color: var(--accent2);
     color: #fff;
   }
+  @media (orientation: portrait) {
+    .viewbar {
+      padding: 6px 10px;
+      gap: 5px;
+    }
+    .viewbar button {
+      padding: 4px 14px;
+      font-size: 12px;
+    }
+  }
 
   /* Fills the remaining column height so DeckEditor's height:100% resolves. */
   .view {

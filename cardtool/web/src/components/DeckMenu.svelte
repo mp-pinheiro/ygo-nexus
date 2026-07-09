@@ -113,8 +113,9 @@
   }
   @media (orientation: portrait) {
     .deckbtn {
-      padding: 8px 12px;
-      font-size: 13px;
+      padding: 3px 9px;
+      font-size: 12px;
+      border-radius: 6px;
     }
     .mi {
       padding: 10px 12px;

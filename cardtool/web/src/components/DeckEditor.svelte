@@ -209,9 +209,6 @@
     font-size: 12.5px;
   }
   @media (orientation: portrait) {
-    /* Stack the three sections in ONE scroll: the desktop grid gives each
-       column its own scrollbar, which on a phone would clip Extra/Side
-       (auto rows overflow the fixed-height container). */
     .cols {
       display: flex;
       flex-direction: column;
@@ -225,18 +222,48 @@
     }
     .col-head {
       position: sticky;
-      top: 0;
       z-index: 2;
+      padding: 5px 10px;
     }
     .col-list {
       overflow: visible;
     }
     .deck-head {
-      padding: 10px 12px;
-      gap: 8px 10px;
+      padding: 4px 10px 3px;
+      gap: 3px 6px;
+      border-bottom: none;
     }
     .deck-head h2 {
-      font-size: 14px;
+      font-size: 13px;
+    }
+    /* Hierarchy: the sticky section headers already show per-section counts,
+       so the Main/Extra/Side pills are dropped — row 1 keeps only the unique
+       signal (validity), and the composition counts become one quiet text line
+       instead of a second row of pill chrome. */
+    .summary {
+      margin-left: auto;
+    }
+    .stat {
+      display: none;
+    }
+    .validity {
+      padding: 2px 8px;
+      font-size: 11px;
+      gap: 4px;
+    }
+    .validity .dot {
+      width: 6px;
+      height: 6px;
+    }
+    .counters {
+      gap: 2px 10px;
+    }
+    .counters .ctr {
+      background: none;
+      font-size: 11px;
+      padding: 0;
+      border-radius: 0;
+      opacity: 0.85;
     }
   }
 </style>
