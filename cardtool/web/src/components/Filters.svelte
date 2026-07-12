@@ -87,5 +87,5 @@
   .save-action:hover { border-color:var(--accent); color:var(--accent); }
   .save-action.remove { color:var(--dim); }
   .save-action.remove:hover { border-color:#e23b3b; color:#e23b3b; }
-  .save-err { margin:6px 0 0; font-size:11px; color:#e88bb8; }
+  .save-err { margin:6px 0 0; font-size:11px; color:var(--err); }
 </style>

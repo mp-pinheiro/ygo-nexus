@@ -160,7 +160,7 @@
     color: var(--dim);
   }
   .dmeta .badge { font-size: 10px; padding: 0 5px; }
-  .dstars { color:#f4cf76; font-size:9px; letter-spacing:0.5px; text-shadow:0 1px 1px rgba(0,0,0,.4); }
+  .dstars { color:var(--gold); font-size:9px; letter-spacing:0.5px; text-shadow:var(--gold-shadow); }
   .deff {
     margin-top: 2px;
     font-size: 11px;
@@ -203,7 +203,7 @@
     font-size: 11.5px;
     color: var(--dim);
   }
-  .mstars { color:#f4cf76; letter-spacing:0.5px; font-size:10px; text-shadow:0 1px 1px rgba(0,0,0,.4); }
+  .mstars { color:var(--gold); letter-spacing:0.5px; font-size:10px; text-shadow:var(--gold-shadow); }
   .rstars { display:inline-flex; align-items:center; gap:3px; }
   .eff {
     margin-top: 4px;

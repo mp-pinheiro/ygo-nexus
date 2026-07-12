@@ -112,7 +112,7 @@
     font-variant-numeric: tabular-nums;
   }
   .sec-count.bad {
-    color: #ff8a8a;
+    color: var(--danger);
   }
   .dp-valid {
     text-align: center;
@@ -123,7 +123,7 @@
     flex-shrink: 0;
   }
   .dp-valid.ok {
-    color: #7fe6d3;
+    color: var(--ok);
   }
   .dp-empty {
     padding: 20px;

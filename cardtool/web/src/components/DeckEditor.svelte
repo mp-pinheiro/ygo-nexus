@@ -109,7 +109,7 @@
   }
   .stat.bad {
     border-color: var(--trap);
-    color: #e88bb8;
+    color: var(--err);
   }
   .validity {
     display: inline-flex;
@@ -120,11 +120,11 @@
     padding: 4px 10px;
     border-radius: 8px;
     border: 1px solid var(--line);
-    color: #e88bb8;
+    color: var(--err);
     background: rgba(181, 66, 127, 0.12);
   }
   .validity.ok {
-    color: #7fe6d3;
+    color: var(--ok);
     background: rgba(29, 154, 138, 0.14);
     border-color: var(--spell);
   }
@@ -194,7 +194,7 @@
     font-variant-numeric: tabular-nums;
   }
   .cnt.bad {
-    color: #e88bb8;
+    color: var(--err);
   }
   .col-list {
     flex: 1 1 auto;
