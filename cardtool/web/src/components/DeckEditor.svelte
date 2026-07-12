@@ -5,6 +5,9 @@
   import DeckEntry from './DeckEntry.svelte'
   import DeckToolbar from './DeckToolbar.svelte'
   import { previewOn } from '../lib/stores/preview.svelte.js'
+  import { keepScroll } from '../lib/keepScroll.js'
+  import { media } from '../lib/stores/media.svelte.js'
+  import ToTop from './ToTop.svelte'
 
   const SECTIONS = [
     { key: 'main', label: 'Main', min: 40, max: 60 },
@@ -35,7 +38,7 @@
   </header>
 
   {#if active.deck}
-    <div class="cols" use:previewOn>
+    <div class="cols" use:previewOn use:keepScroll={'deck'}>
       <DeckToolbar />
       {#each SECTIONS as s (s.key)}
         {@const rows = filteredGrouped(s.key, deckFilters.q, deckFilters.sort, deckFilters.dir, deckFilters.types)}
@@ -51,7 +54,7 @@
             </span>
           </div>
           {#if rows.length}
-            <div class="col-list">
+            <div class="col-list" use:keepScroll={'deck-' + s.key}>
               {#each rows as row (row.idx)}
                 <DeckEntry section={s.key} idx={row.idx} count={row.count} rich />
               {/each}
@@ -63,6 +66,9 @@
           {/if}
         </div>
       {/each}
+      {#if media.mobile}
+        <ToTop />
+      {/if}
     </div>
   {/if}
 </section>
