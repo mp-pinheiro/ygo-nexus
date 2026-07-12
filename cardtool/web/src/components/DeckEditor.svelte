@@ -6,6 +6,8 @@
   import DeckToolbar from './DeckToolbar.svelte'
   import { previewOn } from '../lib/stores/preview.svelte.js'
   import { keepScroll } from '../lib/keepScroll.js'
+  import { media } from '../lib/stores/media.svelte.js'
+  import ToTop from './ToTop.svelte'
 
   const SECTIONS = [
     { key: 'main', label: 'Main', min: 40, max: 60 },
@@ -66,6 +68,12 @@
           {/if}
         </div>
       {/each}
+      <!-- Portrait only: .cols is the scroller there; on desktop it's a grid
+           whose columns scroll individually, and an extra grid item would add
+           a phantom 1px gap row. -->
+      {#if media.mobile}
+        <ToTop />
+      {/if}
     </div>
   {/if}
 </section>

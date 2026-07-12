@@ -5,6 +5,7 @@
   import { previewOn } from '../lib/stores/preview.svelte.js'
   import { keepScroll } from '../lib/keepScroll.js'
   import CardRow from './CardRow.svelte'
+  import ToTop from './ToTop.svelte'
 
   // Header click: toggle direction when re-sorting the active column, else asc.
   // Direction is computed against the OLD sort key before it is reassigned.
@@ -48,6 +49,7 @@
   <div class="more">
     {#if results.count > CAP}Showing first {CAP} — refine your search to see the rest.{/if}
   </div>
+  <ToTop />
 </main>
 
 <style>
