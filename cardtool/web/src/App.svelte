@@ -196,7 +196,6 @@
     border-color: var(--accent2);
     color: #fff;
   }
-  /* Theme toggle: pinned to the far edge, icon-only. */
   .viewbar .themebtn {
     margin-left: auto;
     padding: 5px 10px;

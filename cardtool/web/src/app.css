@@ -3,10 +3,6 @@
    because Svelte prunes scoped selectors it can't see used statically.
    Component-unique/structural CSS lives in each component's scoped <style>. */
 
-/* Dark is the default; the light block below overrides the same tokens when
-   index.html / theme.svelte.js set data-theme="light" on <html>. Colors that
-   only read well on dark panels (errors, success, stars) get semantic tokens
-   here instead of hardcoded hexes in components. */
 :root, :root[data-theme='dark'] {
   --bg:#12141c; --panel:#1b1e2b; --panel2:#232838; --line:#2f3547;
   --txt:#e6e8ef; --dim:#9aa2b8; --accent:#f0b429; --accent2:#4f7cff;
