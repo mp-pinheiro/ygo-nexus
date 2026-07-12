@@ -3,6 +3,7 @@
   import { filters } from '../lib/stores/filters.svelte.js'
   import { results } from '../lib/stores/results.svelte.js'
   import { previewOn } from '../lib/stores/preview.svelte.js'
+  import { keepScroll } from '../lib/keepScroll.js'
   import CardRow from './CardRow.svelte'
 
   // Header click: toggle direction when re-sorting the active column, else asc.
@@ -15,7 +16,7 @@
   const indicator = (k) => (filters.sort === k ? (filters.dir === 1 ? '▲' : '▼') : '–')
 </script>
 
-<main>
+<main use:keepScroll={'browse'}>
   <!-- Mobile-only sort strip: the narrow layout hides most table columns, so
        the thead is swapped for this scrollable strip to keep every sort key
        reachable. -->

@@ -5,6 +5,7 @@
   import DeckEntry from './DeckEntry.svelte'
   import DeckToolbar from './DeckToolbar.svelte'
   import { previewOn } from '../lib/stores/preview.svelte.js'
+  import { keepScroll } from '../lib/keepScroll.js'
 
   const SECTIONS = [
     { key: 'main', label: 'Main', min: 40, max: 60 },
@@ -35,7 +36,9 @@
   </header>
 
   {#if active.deck}
-    <div class="cols" use:previewOn>
+    <!-- .cols scrolls in portrait, each .col-list in landscape; keying both
+         keeps whichever container is live restorable across the view toggle. -->
+    <div class="cols" use:previewOn use:keepScroll={'deck'}>
       <DeckToolbar />
       {#each SECTIONS as s (s.key)}
         {@const rows = filteredGrouped(s.key, deckFilters.q, deckFilters.sort, deckFilters.dir, deckFilters.types)}
@@ -51,7 +54,7 @@
             </span>
           </div>
           {#if rows.length}
-            <div class="col-list">
+            <div class="col-list" use:keepScroll={'deck-' + s.key}>
               {#each rows as row (row.idx)}
                 <DeckEntry section={s.key} idx={row.idx} count={row.count} rich />
               {/each}
