@@ -3,10 +3,22 @@
    because Svelte prunes scoped selectors it can't see used statically.
    Component-unique/structural CSS lives in each component's scoped <style>. */
 
-:root {
+:root, :root[data-theme='dark'] {
   --bg:#12141c; --panel:#1b1e2b; --panel2:#232838; --line:#2f3547;
   --txt:#e6e8ef; --dim:#9aa2b8; --accent:#f0b429; --accent2:#4f7cff;
   --mon:#c8933b; --spell:#1d9a8a; --trap:#b5427f;
+  --err:#e88bb8; --ok:#7fe6d3; --danger:#ff8a8a; --gold:#f4cf76;
+  --gold-shadow:0 1px 1px rgba(0,0,0,.4);
+  color-scheme: dark;
+}
+
+:root[data-theme='light'] {
+  --bg:#eef0f5; --panel:#ffffff; --panel2:#e6e9f2; --line:#c9cfdd;
+  --txt:#1d2333; --dim:#5c6579; --accent:#a1770a; --accent2:#3b5fd9;
+  --mon:#8a6314; --spell:#0e7d6e; --trap:#a52f68;
+  --err:#b3286e; --ok:#0e8a75; --danger:#c22f2f; --gold:#a1770a;
+  --gold-shadow:none;
+  color-scheme: light;
 }
 
 * { box-sizing:border-box; scrollbar-width:thin; scrollbar-color:var(--line) transparent;

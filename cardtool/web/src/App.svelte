@@ -8,6 +8,7 @@
   import { filters } from './lib/stores/filters.svelte.js'
   import { counts } from './lib/stores/deck.svelte.js'
   import { escape, ui, closeDetail } from './lib/stores/ui.svelte.js'
+  import { theme, toggleTheme } from './lib/stores/theme.svelte.js'
   import { clickSelf } from './lib/a11y.js'
 
   let touchStartX = 0
@@ -105,6 +106,13 @@
         closeMobilePanels()
       }}>Deck</button
     >
+    <button
+      type="button"
+      class="themebtn"
+      onclick={toggleTheme}
+      title={theme.mode === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+      aria-label={theme.mode === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+    >{theme.mode === 'dark' ? '☀' : '🌙'}</button>
   </nav>
 
   {#if nav.view === 'browse'}
@@ -188,6 +196,12 @@
     border-color: var(--accent2);
     color: #fff;
   }
+  .viewbar .themebtn {
+    margin-left: auto;
+    padding: 5px 10px;
+    font-size: 14px;
+    line-height: 1;
+  }
   @media (orientation: portrait) {
     .viewbar {
       padding: 6px 10px;
@@ -215,7 +229,7 @@
     color: var(--dim);
   }
   .gate .err {
-    color: #e88bb8;
+    color: var(--err);
   }
 
   /* Mobile bottom action bar (browse view). Bottom placement keeps both

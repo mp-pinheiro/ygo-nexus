@@ -104,7 +104,7 @@
     color: var(--accent);
   }
   .mi.danger:hover {
-    color: #ff8a8a;
+    color: var(--danger);
   }
   .sep {
     height: 1px;

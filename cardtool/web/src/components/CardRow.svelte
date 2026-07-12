@@ -80,7 +80,7 @@
   .nm:hover { text-decoration-color:var(--accent2); color:var(--accent2); }
   .eff { max-width:520px; white-space:pre-wrap; color:var(--dim); font-size:12.5px; }
 
-  .mstars { color:#f4cf76; letter-spacing:0.5px; font-size:10px; text-shadow:0 1px 1px rgba(0,0,0,.4); }
+  .mstars { color:var(--gold); letter-spacing:0.5px; font-size:10px; text-shadow:var(--gold-shadow); }
   .mlvl { display:inline-flex; align-items:center; gap:4px; }
   .msub, .meff { display:none; }
   @media (orientation:portrait) {
