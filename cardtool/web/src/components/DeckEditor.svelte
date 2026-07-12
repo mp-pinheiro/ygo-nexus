@@ -38,8 +38,6 @@
   </header>
 
   {#if active.deck}
-    <!-- .cols scrolls in portrait, each .col-list in landscape; keying both
-         keeps whichever container is live restorable across the view toggle. -->
     <div class="cols" use:previewOn use:keepScroll={'deck'}>
       <DeckToolbar />
       {#each SECTIONS as s (s.key)}
@@ -68,9 +66,6 @@
           {/if}
         </div>
       {/each}
-      <!-- Portrait only: .cols is the scroller there; on desktop it's a grid
-           whose columns scroll individually, and an extra grid item would add
-           a phantom 1px gap row. -->
       {#if media.mobile}
         <ToTop />
       {/if}

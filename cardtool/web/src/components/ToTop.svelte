@@ -1,9 +1,6 @@
 <script>
   import { fade } from 'svelte/transition'
 
-  // Rendered as the LAST child of a scroll container; the zero-height sticky
-  // wrap pins the button to the container's bottom-right without fixed
-  // positioning (which would escape the column and overlay the side panels).
   let wrap = $state(null)
   let visible = $state(false)
 
